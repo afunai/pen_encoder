@@ -1,4 +1,4 @@
-// Official base colors
+// official base colors
 const officialPalletes = [
     [0x00, 0x00, 0x00],
     [0x1d, 0x2b, 0x53],
@@ -21,7 +21,7 @@ const officialPalletes = [
     [0xff, 0xcc, 0xaa],
 ];
 
-// Undocumented extra colors
+// undocumented extra colors
 // https://pico-8.fandom.com/wiki/Palette
 const undocumentedPalletes = [
     [0x29, 0x18, 0x14],
