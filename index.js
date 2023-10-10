@@ -20,6 +20,25 @@ const colorPalletes = [
     [0xff, 0xcc, 0xaa],
 ];
 
+// 0x7f-0xaf characters in P8SCII charset
+// https://pico-8.fandom.com/wiki/P8SCII
+const p8sciiSpecialChars = [
+    '○',
+    '█', '▒', '🐱', '⬇️', '░', '✽', '●', '♥', '☉', '웃', '⌂', '⬅️', '😐', '♪', '🅾️', '◆',
+    '…', '➡️', '★', '⧗', '⬆️', 'ˇ', '∧', '❎', '▤', '▥', 'あ', 'い', 'う', 'え', 'お', 'か',
+    'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ', 'た', 'ち', 'つ', 'て', 'と', 'な', 'に',
+    'ぬ',
+];
+
+const encodeP8scii = (val) => {
+    if (val > 128) throw('out of bound');
+
+    const shiftedVal = val + 0x30; // avoid control characters
+    return (shiftedVal < 0x7f) ?
+        String.fromCharCode(shiftedVal) :
+        p8sciiSpecialChars[shiftedVal - 0x7f];
+};
+
 const getColorDistance = (rgb1, rgb2) => {
     const [r1, g1, b1] = rgb1;
     const [r2, g2, b2] = rgb2;
@@ -27,12 +46,12 @@ const getColorDistance = (rgb1, rgb2) => {
 };
 
 const getNearestColor = (rgb) => {
-    let nearestColor = [0, 0, 0];
+    let nearestColor = [0, 0, 0, 0];
     let minDistance = Infinity;
-    colorPalletes.forEach(color => {
+    colorPalletes.forEach((color, p) => {
         const distance = getColorDistance(color, rgb);
         if (distance < minDistance) {
-            nearestColor = color;
+            nearestColor = [...color, p];
             minDistance = distance;
         }
     });
@@ -44,24 +63,44 @@ const encodeImage = () => {
     const resizedImage = document.getElementById('resizedImage');
 
     const targetWidth = 128;
-    const targetHeight = img.height / (img.width / 128);
+    const targetHeight = img.height / (img.width / targetWidth);
 
     resizedImage.width = targetWidth;
     resizedImage.height = targetHeight;
-    const resizedImageCtx = resizedImage.getContext('2d');
+    const resizedImageCtx = resizedImage.getContext('2d', {alpha: false, willReadFrequently: true});
     resizedImageCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
     const convertedImage = document.getElementById('convertedImage');
     convertedImage.width = targetWidth;
     convertedImage.height = targetHeight;
-    const convertedImageCtx = convertedImage.getContext('2d');
+    const convertedImageCtx = convertedImage.getContext('2d', {alpha: false});
+    const palleteMatrix = [];
     for (let y = 0; y < targetHeight; y++) {
+        const palleteLine = [];
+        palleteMatrix.push(palleteLine);
         for (let x = 0; x < targetWidth; x++) {
-            const [r, g, b] = getNearestColor(resizedImageCtx.getImageData(x, y, 1, 1).data);
+            const [r, g, b, p] = getNearestColor(resizedImageCtx.getImageData(x, y, 1, 1).data);
             convertedImageCtx.fillStyle = `rgb(${r},${g},${b})`;
             convertedImageCtx.fillRect(x, y, 1, 1);
+            palleteLine.push(p);
         }
     }
+
+    let encodedString = '';
+    palleteMatrix.forEach(palleteLine => {
+        let currentP = palleteLine[0];
+        let length = 0;
+        palleteLine.forEach((p, x) => {
+            length += 1;
+            if ((p !== currentP) || (x >= targetWidth - 1)) {
+                encodedString += encodeP8scii(currentP) + encodeP8scii(length);
+                currentP = p;
+                length = 0;
+            }
+        });
+        encodedString += '\n';
+    });
+    document.getElementById('encodedString').value = encodedString;
 };
 
 const displayImage = () => {
