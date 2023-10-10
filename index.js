@@ -1,4 +1,5 @@
-const colorPalletes = [
+// Official base colors
+const officialPalletes = [
     [0x00, 0x00, 0x00],
     [0x1d, 0x2b, 0x53],
     [0x7e, 0x25, 0x53],
@@ -48,7 +49,7 @@ const getColorDistance = (rgb1, rgb2) => {
 const getNearestColor = (rgb) => {
     let nearestColor = [0, 0, 0, 0];
     let minDistance = Infinity;
-    colorPalletes.forEach((color, p) => {
+    officialPalletes.forEach((color, p) => {
         const distance = getColorDistance(color, rgb);
         if (distance < minDistance) {
             nearestColor = [...color, p];
