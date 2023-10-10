@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Image encoder for PICO-8</title>
+        <style>
+            div {margin-bottom: 10px;}
+        </style>
+        <script type="text/javascript" charset="UTF-8" src="./index.js"></script>
+    </head>
+    <body>
+        <h1>Image encoder for PICO-8</h1>
+        <div>
+            <label for="originalImage">Original image</label>
+            <br>
+            <input type="file" id="imageFile" accept="image/*" onchange="displayImage();"/>
+            <img id="originalImage" style="display: none;">
+        </div>
+        <div>
+            <canvas id="resizedImage"></canvas>
+        </div>
+        <div>
+            <canvas id="convertedImage"></canvas>
+        </div>
+    </body>
+</html>
