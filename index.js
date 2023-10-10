@@ -109,11 +109,10 @@ const displayImage = () => {
 
     const file = fileInput.files[0];
     if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            img.src = e.target.result;
-            encodeImage();
-        };
-        reader.readAsDataURL(file);
+        img.src = URL.createObjectURL(file);
+        img.onload = function() {
+          URL.revokeObjectURL(img.src);
+          encodeImage();
+        }
     }
 };
