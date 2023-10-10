@@ -72,24 +72,40 @@ const getColorDistance = (rgb1, rgb2) => {
     return Math.sqrt(Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2));
 };
 
-const getNearestColor = (rgb) => {
+const getNearestColor = (rgb, palletes) => {
     let nearestColor = [0, 0, 0, 0];
     let minDistance = Infinity;
-    officialPalletes.forEach((color, p) => {
-        const distance = getColorDistance(color, rgb);
+    palletes.forEach((palleteRgb, palleteNo) => {
+        const distance = getColorDistance(palleteRgb, rgb);
         if (distance < minDistance) {
-            nearestColor = [...color, p];
+            const [pR, pG, pB] = palleteRgb;
+            nearestColor = [pR, pG, pB, palleteNo];
             minDistance = distance;
         }
     });
     return nearestColor;
 }
 
+const getBestDrawPallete = (matrix) => {
+    const colorScores = {};
+    matrix.forEach(line => {
+        line.forEach(pixel => {
+            const[r, g, b, tmpPalleteNo] = getNearestColor(pixel, allSystemPalletes);
+            const systemPalleteNo = (tmpPalleteNo <= 0x0f) ?
+                tmpPalleteNo : (tmpPalleteNo + 0x70); // undocumented colors begins with 0x80
+            colorScores[systemPalleteNo] ||= {color: [r, g, b], score: 0};
+            colorScores[systemPalleteNo].score += 1;
+        });
+    });
+    const bestPalletteNos = Object.keys(colorScores).sort(pNo => colorScores[pNo].score);
+    return bestPalletteNos.slice(0, 16).map(pNo => [...colorScores[pNo].color, parseInt(pNo)]); // TODO: keep original codes as possible
+};
+
 const encodeImage = () => {
     const img = document.getElementById('originalImage');
     const resizedImage = document.getElementById('resizedImage');
 
-    const targetWidth = 128;
+    const targetWidth = 128; // TODO
     const targetHeight = img.height / (img.width / targetWidth);
 
     resizedImage.width = targetWidth;
@@ -101,27 +117,39 @@ const encodeImage = () => {
     convertedImage.width = targetWidth;
     convertedImage.height = targetHeight;
     const convertedImageCtx = convertedImage.getContext('2d', {alpha: false});
-    const palleteMatrix = [];
+
+    const matrix = [];
     for (let y = 0; y < targetHeight; y++) {
-        const palleteLine = [];
-        palleteMatrix.push(palleteLine);
+        const line = [];
+        matrix.push(line);
         for (let x = 0; x < targetWidth; x++) {
-            const [r, g, b, p] = getNearestColor(resizedImageCtx.getImageData(x, y, 1, 1).data);
-            convertedImageCtx.fillStyle = `rgb(${r},${g},${b})`;
-            convertedImageCtx.fillRect(x, y, 1, 1);
-            palleteLine.push(p);
+            line.push(resizedImageCtx.getImageData(x, y, 1, 1).data);
         }
     }
 
+    const bestDrawPallete = getBestDrawPallete(matrix);
+
+    const palleteMatrix = [];
+    matrix.forEach((line, y) => {
+        const palleteLine = [];
+        palleteMatrix.push(palleteLine);
+        line.forEach((rgb, x) => {
+            const [r, g, b, drawPalleteNo] = getNearestColor(rgb, bestDrawPallete);
+            convertedImageCtx.fillStyle = `rgb(${r},${g},${b})`;
+            convertedImageCtx.fillRect(x, y, 1, 1);
+            palleteLine.push(drawPalleteNo);
+        });
+    });
+
     let encodedString = '';
     palleteMatrix.forEach(palleteLine => {
-        let currentP = palleteLine[0];
+        let currentPalleteNo = palleteLine[0];
         let length = 0;
-        palleteLine.forEach((p, x) => {
+        palleteLine.forEach((drawPalleteNo, x) => {
             length += 1;
-            if ((p !== currentP) || (x >= targetWidth - 1)) {
-                encodedString += encodeP8scii(currentP) + encodeP8scii(length);
-                currentP = p;
+            if ((drawPalleteNo !== currentPalleteNo) || (x >= targetWidth - 1)) {
+                encodedString += encodeP8scii(currentPalleteNo) + encodeP8scii(length);
+                currentPalleteNo = drawPalleteNo;
                 length = 0;
             }
         });
