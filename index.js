@@ -114,32 +114,32 @@ const getBestDrawPallete = (matrix) => {
     return getBestPallete(matrix, fullSystemPallete, 16);
 };
 
-const getFullDitherPallete = (drawPallete) => {
-    const ditherPallete = [];
-    drawPallete.forEach(color1 => {
+const getFullVirtualPallete = (drawPallete) => {
+    const virtualPallete = [];
+    drawPallete.forEach((color1, drawPalleteIndex1) => {
         const [r1, g1, b1] = color1.rgb;
-        drawPallete.forEach(color2 => {
+        drawPallete.forEach((color2, drawPalleteIndex2) => {
             if (color1.index !== color2.index) {
                 const [r2, g2, b2] = color2.rgb;
 
                 // virtual color object
-                ditherPallete.push({
-                    index: ditherPallete.length + 16, // colorIndex: 16 - 47
+                virtualPallete.push({
+                    index: virtualPallete.length + 16, // colorIndex: 16 - 47
                     rgb: [
                         Math.floor((r1 + r2) / 2),
                         Math.floor((g1 + g2) / 2),
                         Math.floor((b1 + b2) / 2),
                     ],
-                    drawPaletteIndexes: [color1.index, color2.index],
+                    compositeIndexes: [drawPalleteIndex1, drawPalleteIndex2],
                 });
             }
         });
     });
-    return ditherPallete;
+    return virtualPallete;
 };
 
-const getBestDitherPallete = (matrix, drawPallete) => {
-    return getBestPallete(matrix, getFullDitherPallete(drawPallete), 48);
+const getBestVirtualPallete = (matrix, drawPallete) => {
+    return getBestPallete(matrix, getFullVirtualPallete(drawPallete), 48);
 };
 
 const getPalleteMatrix = (matrix, pallete) => {
@@ -207,8 +207,8 @@ const encodeImage = () => {
 
     const matrix = getMatrix(resizedImageCtx);
     const drawPallete = getBestDrawPallete(matrix);
-    const ditherPallete = getBestDitherPallete(matrix, drawPallete);
-    const availablePallete = [...drawPallete, ...ditherPallete];
+    const virtualPallete = getBestVirtualPallete(matrix, drawPallete);
+    const availablePallete = [...drawPallete, ...virtualPallete];
 
     const palleteMatrix = getPalleteMatrix(matrix, availablePallete);
     drawByPalleteMatrix(convertedImageCtx, palleteMatrix, availablePallete);
