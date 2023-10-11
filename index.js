@@ -86,11 +86,11 @@ const getNearestColor = (rgb, pallete) => {
     return nearestColor;
 }
 
-const getBestDrawPallete = (matrix) => {
+const getBestPallete = (matrix, basePallete, max) => {
     const colorScores = {};
     matrix.forEach(line => {
         line.forEach(pixel => {
-            const[r, g, b, tmpPalleteNo] = getNearestColor(pixel, allSystemPalletes);
+            const[r, g, b, tmpPalleteNo] = getNearestColor(pixel, basePallete);
             const systemPalleteNo = (tmpPalleteNo <= 0x0f) ?
                 tmpPalleteNo : (tmpPalleteNo + 0x70); // undocumented colors begins with 0x80
             colorScores[systemPalleteNo] ||= {color: [r, g, b], score: 0};
@@ -98,7 +98,34 @@ const getBestDrawPallete = (matrix) => {
         });
     });
     const bestPalletteNos = Object.keys(colorScores).sort(pNo => colorScores[pNo].score);
-    return bestPalletteNos.slice(0, 16).map(pNo => [...colorScores[pNo].color, parseInt(pNo)]); // TODO: keep original codes as possible
+    return bestPalletteNos.slice(0, max).map(pNo => [...colorScores[pNo].color, parseInt(pNo)]); // TODO: keep original codes as possible
+};
+
+const getBestDrawPallete = (matrix) => {
+    return getBestPallete(matrix, fullSystemPallete, 16);
+};
+
+const getFullDitherPallete = (drawPallete) => {
+    const ditherPallete = [];
+    drawPallete.forEach(p1 => {
+        const [r1, g1, b1, pNo1] = p1;
+        drawPallete.forEach(p2 => {
+            const [r2, g2, b2, pNo2] = p2;
+            if (pNo1 !== pNo2) {
+                ditherPallete.push([
+                    (r1 + r2) / 2,
+                    (g1 + g2) / 2,
+                    (b1 + b2) / 2,
+                    pNo1 << 4 + pNo2,
+                ]);
+            }
+        });
+    });
+    return ditherPallete;
+};
+
+const getBestDitherPallete = (matrix, drawPallete) => {
+    return getBestPallete(matrix, getFullDitherPallete(drawPallete), 48);
 };
 
 const encodeImage = () => {
@@ -128,13 +155,15 @@ const encodeImage = () => {
     }
 
     const bestDrawPallete = getBestDrawPallete(matrix);
+    const bestDitherPallete = getBestDitherPallete(matrix, bestDrawPallete);
+    const availablePallete = [...bestDrawPallete, ...bestDitherPallete];
 
     const palleteMatrix = [];
     matrix.forEach((line, y) => {
         const palleteLine = [];
         palleteMatrix.push(palleteLine);
         line.forEach((rgb, x) => {
-            const [r, g, b, drawPalleteNo] = getNearestColor(rgb, bestDrawPallete);
+            const [r, g, b, drawPalleteNo] = getNearestColor(rgb, availablePallete);
             convertedImageCtx.fillStyle = `rgb(${r},${g},${b})`;
             convertedImageCtx.fillRect(x, y, 1, 1);
             palleteLine.push(drawPalleteNo);
