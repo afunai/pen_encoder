@@ -73,17 +73,10 @@ const getColorDistance = (rgb1, rgb2) => {
 };
 
 const getNearestColor = (rgb, pallete) => {
-    let nearestColor = officialPallete[0];
-    let minDistance = Infinity;
-    pallete.forEach((color, colorIndex) => {
-        const distance = getColorDistance(color.rgb, rgb);
-        if (distance < minDistance) {
-            nearestColor = color;
-            minDistance = distance;
-        }
-    });
-    return nearestColor;
-}
+    return pallete.sort(
+        (a, b) => getColorDistance(a.rgb, rgb) - getColorDistance(b.rgb, rgb)
+    )[0];
+};
 
 const getMatrix = (imageCtx) => {
     const matrix = [];
