@@ -116,7 +116,7 @@ const getFullVirtualPallete = (drawPallete) => {
     drawPallete.forEach(color1 => {
         const [r1, g1, b1] = color1.rgb;
         drawPallete.forEach(color2 => {
-            if (color1.drawIndex !== color2.drawIndex) {
+            if (color1.drawIndex !== color2.drawIndex && getColorDistance(color1.rgb, color2.rgb) < 90) {
                 const [r2, g2, b2] = color2.rgb;
 
                 // virtual color object
