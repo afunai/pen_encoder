@@ -72,10 +72,12 @@ const getColorDistance = (rgb1, rgb2) => {
     return Math.sqrt(Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2));
 };
 
-const getNearestColor = (rgb, pallete) => {
-    return pallete.sort(
-        (a, b) => getColorDistance(a.rgb, rgb) - getColorDistance(b.rgb, rgb)
-    )[0];
+const getNearestColor = (rgb, pallete, virtualPenalty = 20) => {
+    return pallete.sort((a, b) => {
+        const penalty = (getColorDistance(a.rgb, [255,157,129]) < 70) ? 0 : virtualPenalty; // more skin tones
+        return getColorDistance(a.rgb, rgb) - getColorDistance(b.rgb, rgb) +
+            ((a.drawIndex > 15) ? penalty : 0) - ((b.drawIndex > 15) ? penalty : 0); // avoid virtual colors
+    })[0];
 };
 
 const getMatrix = (imageCtx) => {
