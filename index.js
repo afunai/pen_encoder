@@ -1,5 +1,5 @@
 // official base colors
-const officialPallete = [
+const officialPalette = [
     {index: 0, rgb: [0x00, 0x00, 0x00]},
     {index: 1, rgb: [0x1d, 0x2b, 0x53]},
     {index: 2, rgb: [0x7e, 0x25, 0x53]},
@@ -23,7 +23,7 @@ const officialPallete = [
 
 // undocumented extra colors
 // https://pico-8.fandom.com/wiki/Palette
-const undocumentedPallete = [
+const undocumentedPalette = [
     {index: 128, rgb: [0x29, 0x18, 0x14]},
     {index: 129, rgb: [0x29, 0x18, 0x14]},
     {index: 130, rgb: [0x42, 0x21, 0x36]},
@@ -45,7 +45,7 @@ const undocumentedPallete = [
     {index: 143, rgb: [0xff, 0x9d, 0x81]},
 ];
 
-const fullSystemPallete = [...officialPallete, ...undocumentedPallete];
+const fullSystemPalette = [...officialPalette, ...undocumentedPalette];
 
 // 0x7f-0xaf characters in P8SCII charset
 // https://pico-8.fandom.com/wiki/P8SCII
@@ -72,8 +72,8 @@ const getColorDistance = (rgb1, rgb2) => {
     return Math.sqrt(Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2));
 };
 
-const getNearestColor = (rgb, pallete, virtualPenalty = 20) => {
-    return pallete.sort((a, b) => {
+const getNearestColor = (rgb, palette, virtualPenalty = 20) => {
+    return palette.sort((a, b) => {
         const penalty = (getColorDistance(a.rgb, [255,157,129]) < 70) ? 0 : virtualPenalty; // more skin tones
         return getColorDistance(a.rgb, rgb) - getColorDistance(b.rgb, rgb) +
             ((a.drawIndex > 15) ? penalty : 0) - ((b.drawIndex > 15) ? penalty : 0); // avoid virtual colors
@@ -92,13 +92,13 @@ const getMatrix = (imageCtx) => {
     return matrix;
 };
 
-const getBestPallete = (matrix, basePallete, max) => {
-    if (basePallete.length <= max) return basePallete;
+const getBestPalette = (matrix, basePalette, max) => {
+    if (basePalette.length <= max) return basePalette;
 
     const colorScores = {};
     matrix.forEach(line => {
         line.forEach(rgb => {
-            const nearestColor = getNearestColor(rgb, basePallete);
+            const nearestColor = getNearestColor(rgb, basePalette);
             colorScores[nearestColor.index] ||= {color: nearestColor, score: 0};
             colorScores[nearestColor.index].score += 1;
         });
@@ -107,23 +107,23 @@ const getBestPallete = (matrix, basePallete, max) => {
     return bestColorIndexes.slice(0, max).map(index => colorScores[index].color); // TODO: keep original indexes as possible
 };
 
-const getBestDrawPallete = (matrix) => {
-    return getBestPallete(matrix, fullSystemPallete, 16).map((color, i) => {
+const getBestDrawPalette = (matrix) => {
+    return getBestPalette(matrix, fullSystemPalette, 16).map((color, i) => {
         return {...color, drawIndex: i}; // 0 - 15
     });
 };
 
-const getFullVirtualPallete = (drawPallete) => {
-    const virtualPallete = [];
-    drawPallete.forEach(color1 => {
+const getFullVirtualPalette = (drawPalette) => {
+    const virtualPalette = [];
+    drawPalette.forEach(color1 => {
         const [r1, g1, b1] = color1.rgb;
-        drawPallete.forEach(color2 => {
+        drawPalette.forEach(color2 => {
             if (color1.drawIndex !== color2.drawIndex && getColorDistance(color1.rgb, color2.rgb) < 90) {
                 const [r2, g2, b2] = color2.rgb;
 
                 // virtual color object
-                virtualPallete.push({
-                    index: virtualPallete.length + 256, // "system" index for virtual colors.
+                virtualPalette.push({
+                    index: virtualPalette.length + 256, // "system" index for virtual colors.
                     rgb: [
                         Math.floor((r1 + r2) / 2),
                         Math.floor((g1 + g2) / 2),
@@ -134,30 +134,30 @@ const getFullVirtualPallete = (drawPallete) => {
             }
         });
     });
-    return virtualPallete;
+    return virtualPalette;
 };
 
-const getBestVirtualPallete = (matrix, drawPallete) => {
-    return getBestPallete(matrix, getFullVirtualPallete(drawPallete), 48).map((color, i) => {
+const getBestVirtualPalette = (matrix, drawPalette) => {
+    return getBestPalette(matrix, getFullVirtualPalette(drawPalette), 48).map((color, i) => {
         return {...color, drawIndex: i + 16}; // 16 - 64
     });
 };
 
-const getPalleteMatrix = (matrix, pallete) => {
-    const palleteMatrix = [];
+const getPaletteMatrix = (matrix, palette) => {
+    const paletteMatrix = [];
     matrix.forEach((line, y) => {
-        const palleteLine = [];
-        palleteMatrix.push(palleteLine);
+        const paletteLine = [];
+        paletteMatrix.push(paletteLine);
         line.forEach(rgb => {
-            const nearestColor = getNearestColor(rgb, pallete);
-            palleteLine.push(nearestColor);
+            const nearestColor = getNearestColor(rgb, palette);
+            paletteLine.push(nearestColor);
         });
     });
-    return palleteMatrix;
+    return paletteMatrix;
 };
 
-const drawByPalleteMatrix = (imageCtx, palleteMatrix, pallete) => {
-    palleteMatrix.forEach((line, y) => {
+const drawByPaletteMatrix = (imageCtx, paletteMatrix, palette) => {
+    paletteMatrix.forEach((line, y) => {
         line.forEach((color, x) => {
             const [r, g, b] = color.rgb;
             imageCtx.fillStyle = `rgb(${r},${g},${b})`;
@@ -166,27 +166,27 @@ const drawByPalleteMatrix = (imageCtx, palleteMatrix, pallete) => {
     });
 };
 
-const getDrawPalleteHeader = (drawPallete) => {
-    return drawPallete.map(color => {
-        return encodeP8scii(color.index); // map systemPalleteIndex to drawPalleteIndex
+const getDrawPaletteHeader = (drawPalette) => {
+    return drawPalette.map(color => {
+        return encodeP8scii(color.index); // map systemPaletteIndex to drawPaletteIndex
     }).join('') + '\n';
 };
 
-const getVirtualPalleteHeader = (virtualPallete) => {
-    return virtualPallete.map(color => {
+const getVirtualPaletteHeader = (virtualPalette) => {
+    return virtualPalette.map(color => {
         // TODO: mix ratios, maybe?
         return encodeP8scii(color.compositeIndexes[0]) + encodeP8scii(color.compositeIndexes[1]);
     }).join('') + '\n';
 };
 
-const getEncodedBody = (palleteMatrix) => {
+const getEncodedBody = (paletteMatrix) => {
     let encodedBody = '';
-    palleteMatrix.forEach(palleteLine => {
-        let currentColorIndex = palleteLine[0].drawIndex;
+    paletteMatrix.forEach(paletteLine => {
+        let currentColorIndex = paletteLine[0].drawIndex;
         let length = 0;
-        palleteLine.forEach((color, x) => {
+        paletteLine.forEach((color, x) => {
             length += 1;
-            if ((color.drawIndex !== currentColorIndex) || (x >= palleteLine.length - 1)) {
+            if ((color.drawIndex !== currentColorIndex) || (x >= paletteLine.length - 1)) {
                 encodedBody += encodeP8scii(currentColorIndex) + encodeP8scii(length);
                 currentColorIndex = color.drawIndex;
                 length = 0;
@@ -214,18 +214,18 @@ const encodeImage = () => {
     const convertedImageCtx = convertedImage.getContext('2d', {alpha: false});
 
     const matrix = getMatrix(resizedImageCtx);
-    const drawPallete = getBestDrawPallete(matrix);
-    const virtualPallete = getBestVirtualPallete(matrix, drawPallete);
-    const availablePallete = [...drawPallete, ...virtualPallete];
+    const drawPalette = getBestDrawPalette(matrix);
+    const virtualPalette = getBestVirtualPalette(matrix, drawPalette);
+    const availablePalette = [...drawPalette, ...virtualPalette];
 
-    const palleteMatrix = getPalleteMatrix(matrix, availablePallete);
-    drawByPalleteMatrix(convertedImageCtx, palleteMatrix, availablePallete);
+    const paletteMatrix = getPaletteMatrix(matrix, availablePalette);
+    drawByPaletteMatrix(convertedImageCtx, paletteMatrix, availablePalette);
 
     document.getElementById('encodedString').value =
-        getDrawPalleteHeader(drawPallete) +
-        getVirtualPalleteHeader(virtualPallete) +
+        getDrawPaletteHeader(drawPalette) +
+        getVirtualPaletteHeader(virtualPalette) +
         '---\n' +
-        getEncodedBody(palleteMatrix);
+        getEncodedBody(paletteMatrix);
 };
 
 const displayImage = () => {
