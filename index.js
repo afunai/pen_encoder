@@ -1,48 +1,48 @@
 // official base colors
 const officialPallete = [
-    [0x00, 0x00, 0x00],
-    [0x1d, 0x2b, 0x53],
-    [0x7e, 0x25, 0x53],
-    [0x00, 0x87, 0x51],
+    {index: 0, rgb: [0x00, 0x00, 0x00]},
+    {index: 1, rgb: [0x1d, 0x2b, 0x53]},
+    {index: 2, rgb: [0x7e, 0x25, 0x53]},
+    {index: 3, rgb: [0x00, 0x87, 0x51]},
 
-    [0xab, 0x52, 0x36],
-    [0x5f, 0x57, 0x4f],
-    [0xc2, 0xc3, 0xc7],
-    [0xff, 0xf1, 0xe8],
+    {index: 4, rgb: [0xab, 0x52, 0x36]},
+    {index: 5, rgb: [0x5f, 0x57, 0x4f]},
+    {index: 6, rgb: [0xc2, 0xc3, 0xc7]},
+    {index: 7, rgb: [0xff, 0xf1, 0xe8]},
 
-    [0xff, 0x00, 0x4d],
-    [0xff, 0xa3, 0x00],
-    [0xff, 0xec, 0x27],
-    [0x00, 0xe4, 0x36],
+    {index: 8, rgb: [0xff, 0x00, 0x4d]},
+    {index: 9, rgb: [0xff, 0xa3, 0x00]},
+    {index: 10, rgb: [0xff, 0xec, 0x27]},
+    {index: 11, rgb: [0x00, 0xe4, 0x36]},
 
-    [0x29, 0xad, 0xff],
-    [0x83, 0x76, 0x9c],
-    [0xff, 0x77, 0xa8],
-    [0xff, 0xcc, 0xaa],
+    {index: 12, rgb: [0x29, 0xad, 0xff]},
+    {index: 13, rgb: [0x83, 0x76, 0x9c]},
+    {index: 14, rgb: [0xff, 0x77, 0xa8]},
+    {index: 15, rgb: [0xff, 0xcc, 0xaa]},
 ];
 
 // undocumented extra colors
 // https://pico-8.fandom.com/wiki/Palette
 const undocumentedPallete = [
-    [0x29, 0x18, 0x14],
-    [0x29, 0x18, 0x14],
-    [0x42, 0x21, 0x36],
-    [0x12, 0x53, 0x59],
+    {index: 128, rgb: [0x29, 0x18, 0x14]},
+    {index: 129, rgb: [0x29, 0x18, 0x14]},
+    {index: 130, rgb: [0x42, 0x21, 0x36]},
+    {index: 131, rgb: [0x12, 0x53, 0x59]},
 
-    [0x74, 0x2f, 0x29],
-    [0x49, 0x33, 0x3b],
-    [0xa2, 0x88, 0x79],
-    [0xf3, 0xef, 0x7d],
+    {index: 132, rgb: [0x74, 0x2f, 0x29]},
+    {index: 133, rgb: [0x49, 0x33, 0x3b]},
+    {index: 134, rgb: [0xa2, 0x88, 0x79]},
+    {index: 135, rgb: [0xf3, 0xef, 0x7d]},
 
-    [0xbe, 0x12, 0x50],
-    [0xff, 0x6c, 0x24],
-    [0xa8, 0xe7, 0x2e],
-    [0x00, 0xb5, 0x43],
+    {index: 136, rgb: [0xbe, 0x12, 0x50]},
+    {index: 137, rgb: [0xff, 0x6c, 0x24]},
+    {index: 138, rgb: [0xa8, 0xe7, 0x2e]},
+    {index: 139, rgb: [0x00, 0xb5, 0x43]},
 
-    [0x06, 0x5a, 0xb5],
-    [0x75, 0x46, 0x65],
-    [0xff, 0x6e, 0x59],
-    [0xff, 0x9d, 0x81],
+    {index: 140, rgb: [0x06, 0x5a, 0xb5]},
+    {index: 141, rgb: [0x75, 0x46, 0x65]},
+    {index: 142, rgb: [0xff, 0x6e, 0x59]},
+    {index: 143, rgb: [0xff, 0x9d, 0x81]},
 ];
 
 const fullSystemPallete = [...officialPallete, ...undocumentedPallete];
@@ -73,32 +73,41 @@ const getColorDistance = (rgb1, rgb2) => {
 };
 
 const getNearestColor = (rgb, pallete) => {
-    let nearestColor = [0, 0, 0, 0];
+    let nearestColor = officialPallete[0];
     let minDistance = Infinity;
-    pallete.forEach((palleteRgb, palleteNo) => {
-        const distance = getColorDistance(palleteRgb, rgb);
+    pallete.forEach((color, colorIndex) => {
+        const distance = getColorDistance(color.rgb, rgb);
         if (distance < minDistance) {
-            const [pR, pG, pB] = palleteRgb;
-            nearestColor = [pR, pG, pB, palleteNo];
+            nearestColor = color;
             minDistance = distance;
         }
     });
     return nearestColor;
 }
 
+const getMatrix = (imageCtx) => {
+    const matrix = [];
+    for (let y = 0; y < imageCtx.canvas.height; y++) {
+        const line = [];
+        matrix.push(line);
+        for (let x = 0; x < imageCtx.canvas.width; x++) {
+            line.push(imageCtx.getImageData(x, y, 1, 1).data);
+        }
+    }
+    return matrix;
+};
+
 const getBestPallete = (matrix, basePallete, max) => {
     const colorScores = {};
     matrix.forEach(line => {
-        line.forEach(pixel => {
-            const[r, g, b, tmpPalleteNo] = getNearestColor(pixel, basePallete);
-            const systemPalleteNo = (tmpPalleteNo <= 0x0f) ?
-                tmpPalleteNo : (tmpPalleteNo + 0x70); // undocumented colors begins with 0x80
-            colorScores[systemPalleteNo] ||= {color: [r, g, b], score: 0};
-            colorScores[systemPalleteNo].score += 1;
+        line.forEach(rgb => {
+            const nearestColor = getNearestColor(rgb, basePallete);
+            colorScores[nearestColor.index] ||= {color: nearestColor, score: 0};
+            colorScores[nearestColor.index].score += 1;
         });
     });
-    const bestPalletteNos = Object.keys(colorScores).sort(pNo => colorScores[pNo].score);
-    return bestPalletteNos.slice(0, max).map(pNo => [...colorScores[pNo].color, parseInt(pNo)]); // TODO: keep original codes as possible
+    const bestColorIndexes = Object.keys(colorScores).sort(index => colorScores[index].score);
+    return bestColorIndexes.slice(0, max).map(index => colorScores[index].color); // TODO: keep original indexes as possible
 };
 
 const getBestDrawPallete = (matrix) => {
@@ -107,17 +116,22 @@ const getBestDrawPallete = (matrix) => {
 
 const getFullDitherPallete = (drawPallete) => {
     const ditherPallete = [];
-    drawPallete.forEach(p1 => {
-        const [r1, g1, b1, pNo1] = p1;
-        drawPallete.forEach(p2 => {
-            const [r2, g2, b2, pNo2] = p2;
-            if (pNo1 !== pNo2) {
-                ditherPallete.push([
-                    (r1 + r2) / 2,
-                    (g1 + g2) / 2,
-                    (b1 + b2) / 2,
-                    pNo1 << 4 + pNo2,
-                ]);
+    drawPallete.forEach(color1 => {
+        const [r1, g1, b1] = color1.rgb;
+        drawPallete.forEach(color2 => {
+            if (color1.index !== color2.index) {
+                const [r2, g2, b2] = color2.rgb;
+
+                // virtual color object
+                ditherPallete.push({
+                    index: ditherPallete.length + 16, // colorIndex: 16 - 47
+                    rgb: [
+                        Math.floor((r1 + r2) / 2),
+                        Math.floor((g1 + g2) / 2),
+                        Math.floor((b1 + b2) / 2),
+                    ],
+                    drawPaletteIndexes: [color1.index, color2.index],
+                });
             }
         });
     });
@@ -128,13 +142,59 @@ const getBestDitherPallete = (matrix, drawPallete) => {
     return getBestPallete(matrix, getFullDitherPallete(drawPallete), 48);
 };
 
+const getPalleteMatrix = (matrix, pallete) => {
+    const palleteMatrix = [];
+    matrix.forEach((line, y) => {
+        const palleteLine = [];
+        palleteMatrix.push(palleteLine);
+        line.forEach(rgb => {
+            const nearestColor = getNearestColor(rgb, pallete);
+            palleteLine.push(nearestColor);
+        });
+    });
+    return palleteMatrix;
+};
+
+const drawByPalleteMatrix = (imageCtx, palleteMatrix, pallete) => {
+    palleteMatrix.forEach((line, y) => {
+        line.forEach((color, x) => {
+            const [r, g, b] = color.rgb;
+            imageCtx.fillStyle = `rgb(${r},${g},${b})`;
+            imageCtx.fillRect(x, y, 1, 1);
+        });
+    });
+};
+
+const getDrawPalleteHeader = (drawPallete) => {
+    return drawPallete.map((color, drawPalleteIndex) => {
+        return encodeP8scii(color.index); // map systemPalleteIndex to drawPalleteIndex
+    }).join('') + '\n';
+};
+
+const getEncodedBody = (palleteMatrix) => {
+    let encodedBody = '';
+    palleteMatrix.forEach(palleteLine => {
+        let currentColorIndex = palleteLine[0].index;
+        let length = 0;
+        palleteLine.forEach((color, x) => {
+            length += 1;
+            if ((color.index !== currentColorIndex) || (x >= palleteLine.length - 1)) {
+                encodedBody += encodeP8scii(currentColorIndex) + encodeP8scii(length);
+                currentColorIndex = color.index;
+                length = 0;
+            }
+        });
+        encodedBody += '\n';
+    });
+    return encodedBody;
+};
+
 const encodeImage = () => {
     const img = document.getElementById('originalImage');
-    const resizedImage = document.getElementById('resizedImage');
-
     const targetWidth = 128; // TODO
     const targetHeight = img.height / (img.width / targetWidth);
 
+    const resizedImage = document.getElementById('resizedImage');
     resizedImage.width = targetWidth;
     resizedImage.height = targetHeight;
     const resizedImageCtx = resizedImage.getContext('2d', {alpha: false, willReadFrequently: true});
@@ -145,51 +205,18 @@ const encodeImage = () => {
     convertedImage.height = targetHeight;
     const convertedImageCtx = convertedImage.getContext('2d', {alpha: false});
 
-    const matrix = [];
-    for (let y = 0; y < targetHeight; y++) {
-        const line = [];
-        matrix.push(line);
-        for (let x = 0; x < targetWidth; x++) {
-            line.push(resizedImageCtx.getImageData(x, y, 1, 1).data);
-        }
-    }
+    const matrix = getMatrix(resizedImageCtx);
+    const drawPallete = getBestDrawPallete(matrix);
+    const ditherPallete = getBestDitherPallete(matrix, drawPallete);
+    const availablePallete = [...drawPallete, ...ditherPallete];
 
-    const bestDrawPallete = getBestDrawPallete(matrix);
-    const bestDitherPallete = getBestDitherPallete(matrix, bestDrawPallete);
-    const availablePallete = [...bestDrawPallete, ...bestDitherPallete];
+    const palleteMatrix = getPalleteMatrix(matrix, availablePallete);
+    drawByPalleteMatrix(convertedImageCtx, palleteMatrix, availablePallete);
 
-    const palleteMatrix = [];
-    matrix.forEach((line, y) => {
-        const palleteLine = [];
-        palleteMatrix.push(palleteLine);
-        line.forEach((rgb, x) => {
-            const [r, g, b, drawPalleteNo] = getNearestColor(rgb, availablePallete);
-            convertedImageCtx.fillStyle = `rgb(${r},${g},${b})`;
-            convertedImageCtx.fillRect(x, y, 1, 1);
-            palleteLine.push(drawPalleteNo);
-        });
-    });
-
-    const drawPalleteHeader = bestDrawPallete.map(rgbAndNo => {
-        const [r, g, b, systemPalleteNo] = rgbAndNo;
-        return encodeP8scii(systemPalleteNo);
-    }).join('');
-
-    let encodedBody = '';
-    palleteMatrix.forEach(palleteLine => {
-        let currentPalleteNo = palleteLine[0];
-        let length = 0;
-        palleteLine.forEach((drawPalleteNo, x) => {
-            length += 1;
-            if ((drawPalleteNo !== currentPalleteNo) || (x >= targetWidth - 1)) {
-                encodedBody += encodeP8scii(currentPalleteNo) + encodeP8scii(length);
-                currentPalleteNo = drawPalleteNo;
-                length = 0;
-            }
-        });
-        encodedBody += '\n';
-    });
-    document.getElementById('encodedString').value = drawPalleteHeader + '\n\n' + encodedBody;
+    document.getElementById('encodedString').value =
+        getDrawPalleteHeader(drawPallete) +
+        '---\n' +
+        getEncodedBody(palleteMatrix);
 };
 
 const displayImage = () => {
