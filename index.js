@@ -141,21 +141,26 @@ const encodeImage = () => {
         });
     });
 
-    let encodedString = '';
+    const drawPalleteHeader = bestDrawPallete.map(rgbAndNo => {
+        const [r, g, b, systemPalleteNo] = rgbAndNo;
+        return encodeP8scii(systemPalleteNo);
+    }).join('');
+
+    let encodedBody = '';
     palleteMatrix.forEach(palleteLine => {
         let currentPalleteNo = palleteLine[0];
         let length = 0;
         palleteLine.forEach((drawPalleteNo, x) => {
             length += 1;
             if ((drawPalleteNo !== currentPalleteNo) || (x >= targetWidth - 1)) {
-                encodedString += encodeP8scii(currentPalleteNo) + encodeP8scii(length);
+                encodedBody += encodeP8scii(currentPalleteNo) + encodeP8scii(length);
                 currentPalleteNo = drawPalleteNo;
                 length = 0;
             }
         });
-        encodedString += '\n';
+        encodedBody += '\n';
     });
-    document.getElementById('encodedString').value = encodedString;
+    document.getElementById('encodedString').value = drawPalleteHeader + '\n\n' + encodedBody;
 };
 
 const displayImage = () => {
