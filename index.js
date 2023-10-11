@@ -91,6 +91,8 @@ const getMatrix = (imageCtx) => {
 };
 
 const getBestPallete = (matrix, basePallete, max) => {
+    if (basePallete.length <= max) return basePallete;
+
     const colorScores = {};
     matrix.forEach(line => {
         line.forEach(rgb => {
