@@ -104,26 +104,28 @@ const getBestPallete = (matrix, basePallete, max) => {
 };
 
 const getBestDrawPallete = (matrix) => {
-    return getBestPallete(matrix, fullSystemPallete, 16);
+    return getBestPallete(matrix, fullSystemPallete, 16).map((color, i) => {
+        return {...color, drawIndex: i}; // 0 - 15
+    });
 };
 
 const getFullVirtualPallete = (drawPallete) => {
     const virtualPallete = [];
-    drawPallete.forEach((color1, drawPalleteIndex1) => {
+    drawPallete.forEach(color1 => {
         const [r1, g1, b1] = color1.rgb;
-        drawPallete.forEach((color2, drawPalleteIndex2) => {
-            if (color1.index !== color2.index) {
+        drawPallete.forEach(color2 => {
+            if (color1.drawIndex !== color2.drawIndex) {
                 const [r2, g2, b2] = color2.rgb;
 
                 // virtual color object
                 virtualPallete.push({
-                    index: virtualPallete.length + 16, // colorIndex: 16 - 47
+                    index: virtualPallete.length + 256, // "system" index for virtual colors.
                     rgb: [
                         Math.floor((r1 + r2) / 2),
                         Math.floor((g1 + g2) / 2),
                         Math.floor((b1 + b2) / 2),
                     ],
-                    compositeIndexes: [drawPalleteIndex1, drawPalleteIndex2],
+                    compositeIndexes: [color1.drawIndex, color2.drawIndex],
                 });
             }
         });
@@ -132,7 +134,9 @@ const getFullVirtualPallete = (drawPallete) => {
 };
 
 const getBestVirtualPallete = (matrix, drawPallete) => {
-    return getBestPallete(matrix, getFullVirtualPallete(drawPallete), 48);
+    return getBestPallete(matrix, getFullVirtualPallete(drawPallete), 48).map((color, i) => {
+        return {...color, drawIndex: i + 16}; // 16 - 64
+    });
 };
 
 const getPalleteMatrix = (matrix, pallete) => {
@@ -159,7 +163,7 @@ const drawByPalleteMatrix = (imageCtx, palleteMatrix, pallete) => {
 };
 
 const getDrawPalleteHeader = (drawPallete) => {
-    return drawPallete.map((color, drawPalleteIndex) => {
+    return drawPallete.map(color => {
         return encodeP8scii(color.index); // map systemPalleteIndex to drawPalleteIndex
     }).join('') + '\n';
 };
@@ -174,13 +178,13 @@ const getVirtualPalleteHeader = (virtualPallete) => {
 const getEncodedBody = (palleteMatrix) => {
     let encodedBody = '';
     palleteMatrix.forEach(palleteLine => {
-        let currentColorIndex = palleteLine[0].index;
+        let currentColorIndex = palleteLine[0].drawIndex;
         let length = 0;
         palleteLine.forEach((color, x) => {
             length += 1;
-            if ((color.index !== currentColorIndex) || (x >= palleteLine.length - 1)) {
+            if ((color.drawIndex !== currentColorIndex) || (x >= palleteLine.length - 1)) {
                 encodedBody += encodeP8scii(currentColorIndex) + encodeP8scii(length);
-                currentColorIndex = color.index;
+                currentColorIndex = color.drawIndex;
                 length = 0;
             }
         });
