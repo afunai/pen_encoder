@@ -1,5 +1,5 @@
 // official base colors
-const officialPalletes = [
+const officialPallete = [
     [0x00, 0x00, 0x00],
     [0x1d, 0x2b, 0x53],
     [0x7e, 0x25, 0x53],
@@ -23,7 +23,7 @@ const officialPalletes = [
 
 // undocumented extra colors
 // https://pico-8.fandom.com/wiki/Palette
-const undocumentedPalletes = [
+const undocumentedPallete = [
     [0x29, 0x18, 0x14],
     [0x29, 0x18, 0x14],
     [0x42, 0x21, 0x36],
@@ -45,7 +45,7 @@ const undocumentedPalletes = [
     [0xff, 0x9d, 0x81],
 ];
 
-const allSystemPalletes = [...officialPalletes, ...undocumentedPalletes];
+const fullSystemPallete = [...officialPallete, ...undocumentedPallete];
 
 // 0x7f-0xaf characters in P8SCII charset
 // https://pico-8.fandom.com/wiki/P8SCII
@@ -72,10 +72,10 @@ const getColorDistance = (rgb1, rgb2) => {
     return Math.sqrt(Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2));
 };
 
-const getNearestColor = (rgb, palletes) => {
+const getNearestColor = (rgb, pallete) => {
     let nearestColor = [0, 0, 0, 0];
     let minDistance = Infinity;
-    palletes.forEach((palleteRgb, palleteNo) => {
+    pallete.forEach((palleteRgb, palleteNo) => {
         const distance = getColorDistance(palleteRgb, rgb);
         if (distance < minDistance) {
             const [pR, pG, pB] = palleteRgb;
