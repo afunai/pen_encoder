@@ -171,6 +171,13 @@ const getDrawPalleteHeader = (drawPallete) => {
     }).join('') + '\n';
 };
 
+const getVirtualPalleteHeader = (virtualPallete) => {
+    return virtualPallete.map(color => {
+        // TODO: mix ratios, maybe?
+        return encodeP8scii(color.compositeIndexes[0]) + encodeP8scii(color.compositeIndexes[1]);
+    }).join('') + '\n';
+};
+
 const getEncodedBody = (palleteMatrix) => {
     let encodedBody = '';
     palleteMatrix.forEach(palleteLine => {
@@ -215,6 +222,7 @@ const encodeImage = () => {
 
     document.getElementById('encodedString').value =
         getDrawPalleteHeader(drawPallete) +
+        getVirtualPalleteHeader(virtualPallete) +
         '---\n' +
         getEncodedBody(palleteMatrix);
 };
