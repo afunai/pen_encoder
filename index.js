@@ -187,7 +187,7 @@ const getEncodedBody = (paletteMatrix) => {
         paletteRow.forEach((color, x) => {
             length += 1;
             if ((color.drawIndex !== currentColorIndex) || (x >= paletteRow.length - 1)) {
-                encodedBody += encodeP8scii(currentColorIndex) + encodeP8scii(length);
+                encodedBody += encodeP8scii(length) + encodeP8scii(currentColorIndex);
                 currentColorIndex = color.drawIndex;
                 length = 0;
             }
