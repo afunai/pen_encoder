@@ -83,10 +83,10 @@ const getNearestColor = (rgb, palette, virtualPenalty = 20) => {
 const getMatrix = (imageCtx) => {
     const matrix = [];
     for (let y = 0; y < imageCtx.canvas.height; y++) {
-        const line = [];
-        matrix.push(line);
+        const row = [];
+        matrix.push(row);
         for (let x = 0; x < imageCtx.canvas.width; x++) {
-            line.push(imageCtx.getImageData(x, y, 1, 1).data);
+            row.push(imageCtx.getImageData(x, y, 1, 1).data);
         }
     }
     return matrix;
@@ -96,8 +96,8 @@ const getBestPalette = (matrix, basePalette, max) => {
     if (basePalette.length <= max) return basePalette;
 
     const colorScores = {};
-    matrix.forEach(line => {
-        line.forEach(rgb => {
+    matrix.forEach(row => {
+        row.forEach(rgb => {
             const nearestColor = getNearestColor(rgb, basePalette);
             colorScores[nearestColor.systemIndex] ||= {color: nearestColor, score: 0};
             colorScores[nearestColor.systemIndex].score += 1;
@@ -145,20 +145,20 @@ const getBestVirtualPalette = (matrix, drawPalette) => {
 
 const getPaletteMatrix = (matrix, palette) => {
     const paletteMatrix = [];
-    matrix.forEach((line, y) => {
-        const paletteLine = [];
-        paletteMatrix.push(paletteLine);
-        line.forEach(rgb => {
+    matrix.forEach((row, y) => {
+        const paletteRow = [];
+        paletteMatrix.push(paletteRow);
+        row.forEach(rgb => {
             const nearestColor = getNearestColor(rgb, palette);
-            paletteLine.push(nearestColor);
+            paletteRow.push(nearestColor);
         });
     });
     return paletteMatrix;
 };
 
 const drawByPaletteMatrix = (imageCtx, paletteMatrix, palette) => {
-    paletteMatrix.forEach((line, y) => {
-        line.forEach((color, x) => {
+    paletteMatrix.forEach((row, y) => {
+        row.forEach((color, x) => {
             const [r, g, b] = color.rgb;
             imageCtx.fillStyle = `rgb(${r},${g},${b})`;
             imageCtx.fillRect(x, y, 1, 1);
@@ -181,12 +181,12 @@ const getVirtualPaletteHeader = (virtualPalette) => {
 
 const getEncodedBody = (paletteMatrix) => {
     let encodedBody = '';
-    paletteMatrix.forEach(paletteLine => {
-        let currentColorIndex = paletteLine[0].drawIndex;
+    paletteMatrix.forEach(paletteRow => {
+        let currentColorIndex = paletteRow[0].drawIndex;
         let length = 0;
-        paletteLine.forEach((color, x) => {
+        paletteRow.forEach((color, x) => {
             length += 1;
-            if ((color.drawIndex !== currentColorIndex) || (x >= paletteLine.length - 1)) {
+            if ((color.drawIndex !== currentColorIndex) || (x >= paletteRow.length - 1)) {
                 encodedBody += encodeP8scii(currentColorIndex) + encodeP8scii(length);
                 currentColorIndex = color.drawIndex;
                 length = 0;
