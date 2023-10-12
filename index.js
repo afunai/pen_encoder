@@ -1,48 +1,48 @@
 // official base colors
 const officialPalette = [
-    {index: 0, rgb: [0x00, 0x00, 0x00]},
-    {index: 1, rgb: [0x1d, 0x2b, 0x53]},
-    {index: 2, rgb: [0x7e, 0x25, 0x53]},
-    {index: 3, rgb: [0x00, 0x87, 0x51]},
+    {systemIndex: 0, rgb: [0x00, 0x00, 0x00]},
+    {systemIndex: 1, rgb: [0x1d, 0x2b, 0x53]},
+    {systemIndex: 2, rgb: [0x7e, 0x25, 0x53]},
+    {systemIndex: 3, rgb: [0x00, 0x87, 0x51]},
 
-    {index: 4, rgb: [0xab, 0x52, 0x36]},
-    {index: 5, rgb: [0x5f, 0x57, 0x4f]},
-    {index: 6, rgb: [0xc2, 0xc3, 0xc7]},
-    {index: 7, rgb: [0xff, 0xf1, 0xe8]},
+    {systemIndex: 4, rgb: [0xab, 0x52, 0x36]},
+    {systemIndex: 5, rgb: [0x5f, 0x57, 0x4f]},
+    {systemIndex: 6, rgb: [0xc2, 0xc3, 0xc7]},
+    {systemIndex: 7, rgb: [0xff, 0xf1, 0xe8]},
 
-    {index: 8, rgb: [0xff, 0x00, 0x4d]},
-    {index: 9, rgb: [0xff, 0xa3, 0x00]},
-    {index: 10, rgb: [0xff, 0xec, 0x27]},
-    {index: 11, rgb: [0x00, 0xe4, 0x36]},
+    {systemIndex: 8, rgb: [0xff, 0x00, 0x4d]},
+    {systemIndex: 9, rgb: [0xff, 0xa3, 0x00]},
+    {systemIndex: 10, rgb: [0xff, 0xec, 0x27]},
+    {systemIndex: 11, rgb: [0x00, 0xe4, 0x36]},
 
-    {index: 12, rgb: [0x29, 0xad, 0xff]},
-    {index: 13, rgb: [0x83, 0x76, 0x9c]},
-    {index: 14, rgb: [0xff, 0x77, 0xa8]},
-    {index: 15, rgb: [0xff, 0xcc, 0xaa]},
+    {systemIndex: 12, rgb: [0x29, 0xad, 0xff]},
+    {systemIndex: 13, rgb: [0x83, 0x76, 0x9c]},
+    {systemIndex: 14, rgb: [0xff, 0x77, 0xa8]},
+    {systemIndex: 15, rgb: [0xff, 0xcc, 0xaa]},
 ];
 
 // undocumented extra colors
 // https://pico-8.fandom.com/wiki/Palette
 const undocumentedPalette = [
-    {index: 128, rgb: [0x29, 0x18, 0x14]},
-    {index: 129, rgb: [0x29, 0x18, 0x14]},
-    {index: 130, rgb: [0x42, 0x21, 0x36]},
-    {index: 131, rgb: [0x12, 0x53, 0x59]},
+    {systemIndex: 128, rgb: [0x29, 0x18, 0x14]},
+    {systemIndex: 129, rgb: [0x29, 0x18, 0x14]},
+    {systemIndex: 130, rgb: [0x42, 0x21, 0x36]},
+    {systemIndex: 131, rgb: [0x12, 0x53, 0x59]},
 
-    {index: 132, rgb: [0x74, 0x2f, 0x29]},
-    {index: 133, rgb: [0x49, 0x33, 0x3b]},
-    {index: 134, rgb: [0xa2, 0x88, 0x79]},
-    {index: 135, rgb: [0xf3, 0xef, 0x7d]},
+    {systemIndex: 132, rgb: [0x74, 0x2f, 0x29]},
+    {systemIndex: 133, rgb: [0x49, 0x33, 0x3b]},
+    {systemIndex: 134, rgb: [0xa2, 0x88, 0x79]},
+    {systemIndex: 135, rgb: [0xf3, 0xef, 0x7d]},
 
-    {index: 136, rgb: [0xbe, 0x12, 0x50]},
-    {index: 137, rgb: [0xff, 0x6c, 0x24]},
-    {index: 138, rgb: [0xa8, 0xe7, 0x2e]},
-    {index: 139, rgb: [0x00, 0xb5, 0x43]},
+    {systemIndex: 136, rgb: [0xbe, 0x12, 0x50]},
+    {systemIndex: 137, rgb: [0xff, 0x6c, 0x24]},
+    {systemIndex: 138, rgb: [0xa8, 0xe7, 0x2e]},
+    {systemIndex: 139, rgb: [0x00, 0xb5, 0x43]},
 
-    {index: 140, rgb: [0x06, 0x5a, 0xb5]},
-    {index: 141, rgb: [0x75, 0x46, 0x65]},
-    {index: 142, rgb: [0xff, 0x6e, 0x59]},
-    {index: 143, rgb: [0xff, 0x9d, 0x81]},
+    {systemIndex: 140, rgb: [0x06, 0x5a, 0xb5]},
+    {systemIndex: 141, rgb: [0x75, 0x46, 0x65]},
+    {systemIndex: 142, rgb: [0xff, 0x6e, 0x59]},
+    {systemIndex: 143, rgb: [0xff, 0x9d, 0x81]},
 ];
 
 const fullSystemPalette = [...officialPalette, ...undocumentedPalette];
@@ -99,8 +99,8 @@ const getBestPalette = (matrix, basePalette, max) => {
     matrix.forEach(line => {
         line.forEach(rgb => {
             const nearestColor = getNearestColor(rgb, basePalette);
-            colorScores[nearestColor.index] ||= {color: nearestColor, score: 0};
-            colorScores[nearestColor.index].score += 1;
+            colorScores[nearestColor.systemIndex] ||= {color: nearestColor, score: 0};
+            colorScores[nearestColor.systemIndex].score += 1;
         });
     });
     const bestColorIndexes = Object.keys(colorScores).sort(index => colorScores[index].score);
@@ -123,7 +123,7 @@ const getFullVirtualPalette = (drawPalette) => {
 
                 // virtual color object
                 virtualPalette.push({
-                    index: virtualPalette.length + 256, // "system" index for virtual colors.
+                    systemIndex: virtualPalette.length + 256, // "system" index for virtual colors.
                     rgb: [
                         Math.floor((r1 + r2) / 2),
                         Math.floor((g1 + g2) / 2),
@@ -168,7 +168,7 @@ const drawByPaletteMatrix = (imageCtx, paletteMatrix, palette) => {
 
 const getDrawPaletteHeader = (drawPalette) => {
     return drawPalette.map(color => {
-        return encodeP8scii(color.index); // map systemPaletteIndex to drawPaletteIndex
+        return encodeP8scii(color.systemIndex); // map systemPaletteIndex to drawPaletteIndex
     }).join('') + '\n';
 };
 
