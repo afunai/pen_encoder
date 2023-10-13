@@ -115,7 +115,9 @@ const getBestPalette = (matrix, basePalette, max) => {
 };
 
 const getBestDrawPalette = (matrix) => {
-    return getBestPalette(matrix, fullSystemPalette, 16).map((color, i) => {
+    return getBestPalette(matrix, fullSystemPalette, 16).sort(
+        color => color.systemIndex
+    ).map((color, i) => {
         return {...color, drawIndex: i}; // 0 - 15
     });
 };
