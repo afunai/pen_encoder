@@ -179,20 +179,44 @@ const getVirtualPaletteHeader = (virtualPalette) => {
     }).join('') + '\n';
 };
 
+const bindOrphanPixels = (encodedRow) => {
+    const one = encodeP8scii(1);
+    let row = '';
+    let orphanPixels = '';
+    for (i = 0; i < encodedRow.length; i += 2) {
+        const length = encodedRow.substring(i, i + 1);
+        const colorIndex = encodedRow.substring(i + 1, i + 2);
+        if (length === one)
+            orphanPixels += colorIndex;
+        if (
+            orphanPixels !== '' &&
+            ((i + 2 >= encodedRow.length) || orphanPixels.length > 4 || length !== one)
+        ) {
+            // use "minus value" characters to indicate number of orphans
+            row += String.fromCharCode(0x30 - orphanPixels.length) + orphanPixels;
+            orphanPixels = '';
+        }
+        if (length !== one)
+            row += length + colorIndex;
+    }
+    return row;
+};
+
 const getEncodedBody = (paletteMatrix) => {
     let encodedBody = '';
     paletteMatrix.forEach(paletteRow => {
         let currentColorIndex = paletteRow[0].drawIndex;
         let length = 0;
+        let encodedRow = '';
         paletteRow.forEach((color, x) => {
             length += 1;
             if ((color.drawIndex !== currentColorIndex) || (x >= paletteRow.length - 1)) {
-                encodedBody += encodeP8scii(length) + encodeP8scii(currentColorIndex);
+                encodedRow += encodeP8scii(length) + encodeP8scii(currentColorIndex);
                 currentColorIndex = color.drawIndex;
                 length = 0;
             }
         });
-        encodedBody += '\n';
+        encodedBody += bindOrphanPixels(encodedRow) + '\n';
     });
     return encodedBody;
 };
