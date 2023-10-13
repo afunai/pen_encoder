@@ -142,15 +142,17 @@ const getFullVirtualPalette = (drawPalette) => {
                 });
 
                 // 3:1 composite ratio
-                virtualPalette.push({
-                    systemIndex: virtualPalette.length + 256,
-                    rgb: [
-                        Math.floor((r1 * 3 + r2) / 4),
-                        Math.floor((g1 * 3 + g2) / 4),
-                        Math.floor((b1 * 3 + b2) / 4),
-                    ],
-                    compositeIndexes: [color1.drawIndex + 16, color2.drawIndex], // color1 = 16-31
-                });
+                if (getColorDistance(color1.rgb, color2.rgb) < 70) {
+                    virtualPalette.push({
+                        systemIndex: virtualPalette.length + 256,
+                        rgb: [
+                            Math.floor((r1 * 3 + r2) / 4),
+                            Math.floor((g1 * 3 + g2) / 4),
+                            Math.floor((b1 * 3 + b2) / 4),
+                        ],
+                        compositeIndexes: [color1.drawIndex + 16, color2.drawIndex], // color1 = 16-31
+                    });
+                }
             }
         });
     });
