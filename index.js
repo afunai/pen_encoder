@@ -202,8 +202,30 @@ const bindOrphanPixels = (encodedRow) => {
     return row;
 };
 
+const bindDittoRows = (encodedBody) => {
+    const body = [];
+    let dittoRow = '';
+    let dittoCount = 0;
+    for (let i = 0; i < encodedBody.length; i++) {}
+    encodedBody.forEach((row, i) => {
+        if (row === dittoRow) {
+            dittoCount += 1;
+        }
+        else {
+            if (dittoCount > 0)
+                body.push(`*${dittoCount}\n`);
+            body.push(row);
+            dittoRow = row;
+            dittoCount = 0;
+        }
+    });
+    if (dittoCount > 0)
+        body.push(`*${dittoCount}\n`);
+    return body;
+};
+
 const getEncodedBody = (paletteMatrix) => {
-    let encodedBody = '';
+    let encodedBody = [];
     paletteMatrix.forEach(paletteRow => {
         let currentColorIndex = paletteRow[0].drawIndex;
         let length = 0;
@@ -216,9 +238,9 @@ const getEncodedBody = (paletteMatrix) => {
                 length = 0;
             }
         });
-        encodedBody += bindOrphanPixels(encodedRow) + '\n';
+        encodedBody.push(bindOrphanPixels(encodedRow) + '\n');
     });
-    return encodedBody;
+    return bindDittoRows(encodedBody).join('');
 };
 
 const encodeImage = () => {
