@@ -251,7 +251,11 @@ const encodeImage = () => {
     const resizedImage = document.getElementById('resizedImage');
     resizedImage.width = targetWidth;
     resizedImage.height = targetHeight;
-    const resizedImageCtx = resizedImage.getContext('2d', {alpha: false, willReadFrequently: true});
+    const resizedImageCtx = resizedImage.getContext('2d', {
+        alpha: true,
+        globalAlpha: 1,
+        willReadFrequently: true
+    });
     resizedImageCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
     const convertedImage = document.getElementById('convertedImage');
