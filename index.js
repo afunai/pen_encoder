@@ -47,6 +47,9 @@ const undocumentedPalette = [
 
 const fullSystemPalette = [...officialPalette, ...undocumentedPalette];
 
+// virtual drawIndex 63 is reserved for 'transparent' color
+const transparentColor = {systemIndex: -1, drawIndex: 63, rgb: [0x00, 0xcc, 0x00]};
+
 // 0x7f-0xaf characters in P8SCII charset
 // https://pico-8.fandom.com/wiki/P8SCII
 const p8sciiSpecialChars = [
@@ -72,12 +75,14 @@ const getColorDistance = (rgb1, rgb2) => {
     return Math.sqrt(Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2));
 };
 
-const getNearestColor = (rgb, palette, virtualPenalty = 20) => {
-    return palette.sort((a, b) => {
-        const penalty = (getColorDistance(a.rgb, [255,157,129]) < 70) ? 0 : virtualPenalty; // more skin tones
-        return getColorDistance(a.rgb, rgb) - getColorDistance(b.rgb, rgb) +
-            ((a.drawIndex > 15) ? penalty : 0) - ((b.drawIndex > 15) ? penalty : 0); // avoid virtual colors
-    })[0];
+const getNearestColor = (rgba, palette, virtualPenalty = 20) => {
+    return (rgba[3] === 0) ?
+        transparentColor :
+        palette.sort((a, b) => {
+            const penalty = (getColorDistance(a.rgb, [255,157,129]) < 70) ? 0 : virtualPenalty; // more skin tones
+            return getColorDistance(a.rgb, rgba) - getColorDistance(b.rgb, rgba) +
+                ((a.drawIndex > 15) ? penalty : 0) - ((b.drawIndex > 15) ? penalty : 0); // avoid virtual colors
+        })[0];
 };
 
 const getMatrix = (imageCtx) => {
@@ -97,10 +102,12 @@ const getBestPalette = (matrix, basePalette, max) => {
 
     const colorScores = {};
     matrix.forEach(row => {
-        row.forEach(rgb => {
-            const nearestColor = getNearestColor(rgb, basePalette);
-            colorScores[nearestColor.systemIndex] ||= {color: nearestColor, score: 0};
-            colorScores[nearestColor.systemIndex].score += 1;
+        row.forEach(rgba => {
+            if (rgba[3] > 0) { // skip 'transparent' pixel
+                const nearestColor = getNearestColor(rgba, basePalette);
+                colorScores[nearestColor.systemIndex] ||= {color: nearestColor, score: 0};
+                colorScores[nearestColor.systemIndex].score += 1;
+            }
         });
     });
     const bestColorIndexes = Object.keys(colorScores).sort(index => colorScores[index].score);
@@ -138,8 +145,8 @@ const getFullVirtualPalette = (drawPalette) => {
 };
 
 const getBestVirtualPalette = (matrix, drawPalette) => {
-    return getBestPalette(matrix, getFullVirtualPalette(drawPalette), 48).map((color, i) => {
-        return {...color, drawIndex: i + 16}; // 16 - 64
+    return getBestPalette(matrix, getFullVirtualPalette(drawPalette), 47).map((color, i) => {
+        return {...color, drawIndex: i + 16}; // 16 - 62
     });
 };
 
@@ -148,8 +155,8 @@ const getPaletteMatrix = (matrix, palette) => {
     matrix.forEach((row, y) => {
         const paletteRow = [];
         paletteMatrix.push(paletteRow);
-        row.forEach(rgb => {
-            const nearestColor = getNearestColor(rgb, palette);
+        row.forEach(rgba => {
+            const nearestColor = getNearestColor(rgba, palette);
             paletteRow.push(nearestColor);
         });
     });
@@ -261,7 +268,7 @@ const encodeImage = () => {
     const convertedImage = document.getElementById('convertedImage');
     convertedImage.width = targetWidth;
     convertedImage.height = targetHeight;
-    const convertedImageCtx = convertedImage.getContext('2d', {alpha: false});
+    const convertedImageCtx = convertedImage.getContext('2d', {alpha: true});
 
     const matrix = getMatrix(resizedImageCtx);
     const drawPalette = getBestDrawPalette(matrix);
