@@ -114,7 +114,7 @@ const getBestPalette = (matrix, basePalette, max) => {
     return bestColorIndexes.slice(0, max).map(index => colorScores[index].color); // TODO: keep original indexes as possible
 };
 
-const getBestDrawPalette = (matrix) => {
+const getBestDisplayPalette = (matrix) => {
     return getBestPalette(matrix, fullSystemPalette, 16).sort(
         color => color.systemIndex
     ).map((color, i) => {
@@ -122,11 +122,11 @@ const getBestDrawPalette = (matrix) => {
     });
 };
 
-const getFullVirtualPalette = (drawPalette) => {
+const getFullVirtualPalette = (displayPalette) => {
     const virtualPalette = [];
-    drawPalette.forEach(color1 => {
+    displayPalette.forEach(color1 => {
         const [r1, g1, b1] = color1.rgb;
-        drawPalette.forEach(color2 => {
+        displayPalette.forEach(color2 => {
             if (color1.drawIndex !== color2.drawIndex && getColorDistance(color1.rgb, color2.rgb) < 90) {
                 const [r2, g2, b2] = color2.rgb;
 
@@ -159,8 +159,8 @@ const getFullVirtualPalette = (drawPalette) => {
     return virtualPalette;
 };
 
-const getBestVirtualPalette = (matrix, drawPalette) => {
-    return getBestPalette(matrix, getFullVirtualPalette(drawPalette), 47).map((color, i) => {
+const getBestVirtualPalette = (matrix, displayPalette) => {
+    return getBestPalette(matrix, getFullVirtualPalette(displayPalette), 47).map((color, i) => {
         return {...color, drawIndex: i + 16}; // 16 - 62
     });
 };
@@ -188,9 +188,9 @@ const drawByPaletteMatrix = (imageCtx, paletteMatrix, palette) => {
     });
 };
 
-const getDrawPaletteHeader = (drawPalette) => {
-    return drawPalette.map(color => {
-        return encodeP8scii(color.systemIndex); // map systemPaletteIndex to drawPaletteIndex
+const getDisplayPaletteHeader = (displayPalette) => {
+    return displayPalette.map(color => {
+        return encodeP8scii(color.systemIndex); // map systemPaletteIndex to displayPaletteIndex
     }).join('') + '\n';
 };
 
@@ -286,15 +286,15 @@ const encodeImage = () => {
     const convertedImageCtx = convertedImage.getContext('2d', {alpha: true});
 
     const matrix = getMatrix(resizedImageCtx);
-    const drawPalette = getBestDrawPalette(matrix);
-    const virtualPalette = getBestVirtualPalette(matrix, drawPalette);
-    const availablePalette = [...drawPalette, ...virtualPalette];
+    const displayPalette = getBestDisplayPalette(matrix);
+    const virtualPalette = getBestVirtualPalette(matrix, displayPalette);
+    const availablePalette = [...displayPalette, ...virtualPalette];
 
     const paletteMatrix = getPaletteMatrix(matrix, availablePalette);
     drawByPaletteMatrix(convertedImageCtx, paletteMatrix, availablePalette);
 
     document.getElementById('encodedString').value =
-        getDrawPaletteHeader(drawPalette) +
+        getDisplayPaletteHeader(displayPalette) +
         getVirtualPaletteHeader(virtualPalette) +
         '---\n' +
         getEncodedBody(paletteMatrix);
