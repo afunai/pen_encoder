@@ -47,8 +47,8 @@ const undocumentedPalette = [
 
 const fullSystemPalette = [...officialPalette, ...undocumentedPalette];
 
-// virtual displayIndex 63 is reserved for 'transparent' color
-const transparentColor = {systemIndex: -1, displayIndex: 63, rgb: [0x00, 0xcc, 0x00]};
+// virtual displayIndex 16 is reserved for 'transparent' color
+const transparentColor = {systemIndex: -1, displayIndex: 16, rgb: [0x00, 0xcc, 0x00]};
 
 // 0x7f-0xaf characters in P8SCII charset
 // https://pico-8.fandom.com/wiki/P8SCII
@@ -163,7 +163,7 @@ const getFullVirtualPalette = (displayPalette) => {
 
 const getBestVirtualPalette = (matrix, displayPalette) => {
     return getBestPalette(matrix, getFullVirtualPalette(displayPalette), 47).map((color, i) => {
-        return {...color, displayIndex: i + 16}; // 16 - 62
+        return {...color, displayIndex: i + 17}; // 17 - 63
     });
 };
 
