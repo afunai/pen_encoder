@@ -47,8 +47,8 @@ const undocumentedPalette = [
 
 const fullSystemPalette = [...officialPalette, ...undocumentedPalette];
 
-// virtual drawIndex 63 is reserved for 'transparent' color
-const transparentColor = {systemIndex: -1, drawIndex: 63, rgb: [0x00, 0xcc, 0x00]};
+// virtual displayIndex 63 is reserved for 'transparent' color
+const transparentColor = {systemIndex: -1, displayIndex: 63, rgb: [0x00, 0xcc, 0x00]};
 
 // 0x7f-0xaf characters in P8SCII charset
 // https://pico-8.fandom.com/wiki/P8SCII
@@ -83,7 +83,7 @@ const getNearestColor = (rgba, palette, virtualPenalty = 20) => {
         palette.sort((a, b) => {
             const penalty = (getColorDistance(a.rgb, [255,157,129]) < 70) ? 0 : virtualPenalty; // more skin tones
             return getColorDistance(a.rgb, rgba) - getColorDistance(b.rgb, rgba) +
-                ((a.drawIndex > 15) ? penalty : 0) - ((b.drawIndex > 15) ? penalty : 0); // avoid virtual colors
+                ((a.displayIndex > 15) ? penalty : 0) - ((b.displayIndex > 15) ? penalty : 0); // avoid virtual colors
         })[0];
 };
 
@@ -120,7 +120,7 @@ const getBestDisplayPalette = (matrix) => {
     return getBestPalette(matrix, fullSystemPalette, 16).sort(
         color => color.systemIndex
     ).map((color, i) => {
-        return {...color, drawIndex: i}; // 0 - 15
+        return {...color, displayIndex: i}; // 0 - 15
     });
 };
 
@@ -129,7 +129,7 @@ const getFullVirtualPalette = (displayPalette) => {
     displayPalette.forEach(color1 => {
         const [r1, g1, b1] = color1.rgb;
         displayPalette.forEach(color2 => {
-            if (color1.drawIndex !== color2.drawIndex && getColorDistance(color1.rgb, color2.rgb) < 90) {
+            if (color1.displayIndex !== color2.displayIndex && getColorDistance(color1.rgb, color2.rgb) < 90) {
                 const [r2, g2, b2] = color2.rgb;
 
                 // virtual color object
@@ -140,7 +140,7 @@ const getFullVirtualPalette = (displayPalette) => {
                         Math.floor((g1 + g2) / 2),
                         Math.floor((b1 + b2) / 2),
                     ],
-                    compositeIndexes: [color1.drawIndex, color2.drawIndex],
+                    compositeIndexes: [color1.displayIndex, color2.displayIndex],
                 });
 
                 // 3:1 composite ratio
@@ -152,7 +152,7 @@ const getFullVirtualPalette = (displayPalette) => {
                             Math.floor((g1 * 3 + g2) / 4),
                             Math.floor((b1 * 3 + b2) / 4),
                         ],
-                        compositeIndexes: [color1.drawIndex + 16, color2.drawIndex], // color1 = 16-31
+                        compositeIndexes: [color1.displayIndex + 16, color2.displayIndex], // color1 = 16-31
                     });
                 }
             }
@@ -163,7 +163,7 @@ const getFullVirtualPalette = (displayPalette) => {
 
 const getBestVirtualPalette = (matrix, displayPalette) => {
     return getBestPalette(matrix, getFullVirtualPalette(displayPalette), 47).map((color, i) => {
-        return {...color, drawIndex: i + 16}; // 16 - 62
+        return {...color, displayIndex: i + 16}; // 16 - 62
     });
 };
 
@@ -251,14 +251,14 @@ const bindDittoRows = (encodedBody) => {
 const getEncodedBody = (paletteMatrix) => {
     let encodedBody = [];
     paletteMatrix.forEach(paletteRow => {
-        let currentColorIndex = paletteRow[0].drawIndex;
+        let currentColorIndex = paletteRow[0].displayIndex;
         let length = 0;
         let encodedRow = '';
         paletteRow.forEach((color, x) => {
             length += 1;
-            if ((color.drawIndex !== currentColorIndex) || (x >= paletteRow.length - 1) || length >= 128) {
+            if ((color.displayIndex !== currentColorIndex) || (x >= paletteRow.length - 1) || length >= 128) {
                 encodedRow += encodeP8scii(length) + encodeP8scii(currentColorIndex);
-                currentColorIndex = color.drawIndex;
+                currentColorIndex = color.displayIndex;
                 length = 0;
             }
         });
