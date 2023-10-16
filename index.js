@@ -75,8 +75,10 @@ const getColorDistance = (rgb1, rgb2) => {
     return Math.sqrt(Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2));
 };
 
+const alpha_threshold = 127; // TODO
+
 const getNearestColor = (rgba, palette, virtualPenalty = 20) => {
-    return (rgba[3] === 0) ?
+    return (rgba[3] < alpha_threshold) ?
         transparentColor :
         palette.sort((a, b) => {
             const penalty = (getColorDistance(a.rgb, [255,157,129]) < 70) ? 0 : virtualPenalty; // more skin tones
@@ -103,7 +105,7 @@ const getBestPalette = (matrix, basePalette, max) => {
     const colorScores = {};
     matrix.forEach(row => {
         row.forEach(rgba => {
-            if (rgba[3] > 0) { // skip 'transparent' pixel
+            if (rgba[3] >= alpha_threshold) { // skip 'transparent' pixel
                 const nearestColor = getNearestColor(rgba, basePalette);
                 colorScores[nearestColor.systemIndex] ||= {color: nearestColor, score: 0};
                 colorScores[nearestColor.systemIndex].score += 1;
