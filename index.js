@@ -70,7 +70,7 @@ const encodeP8scii = (val) => {
 };
 
 const getColorDistance = (rgb1, rgb2) => {
-    return chroma.deltaE([...rgb1.slice(0, 3)], [...rgb2.slice(0, 3)], 1, 1, 1.5);
+    return chroma.deltaE([...rgb1.slice(0, 3)], [...rgb2.slice(0, 3)], 1, 1.2, 0.8);
 };
 
 const alpha_threshold = 127; // TODO
@@ -82,7 +82,7 @@ const getNearestColor = (rgba, palette, virtualPenalty = 6) => {
         let nearestColor = null;
         let colorDistance = 100000;
         palette.forEach(color => {
-            const cd = getColorDistance(color.rgb, rgba) + ((color.displayIndex > 15) ? virtualPenalty : 0);
+            const cd = getColorDistance(color.rgb, rgba) + ((color.displayIndex > 15) ? virtualPenalty : 0); + ((color.displayIndex === 0) ? -5 : 0);
             if (cd < colorDistance) {
                 nearestColor = color;
                 colorDistance = cd;
