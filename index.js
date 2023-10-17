@@ -75,14 +75,21 @@ const getColorDistance = (rgb1, rgb2) => {
 
 const alpha_threshold = 127; // TODO
 
-const getNearestColor = (rgba, palette, virtualPenalty = 20) => {
-    return (rgba[3] < alpha_threshold) ?
-        transparentColor :
-        palette.sort((a, b) => {
-            const penalty = (getColorDistance(a.rgb, [255,157,129]) < 70) ? 0 : virtualPenalty; // more skin tones
-            return getColorDistance(a.rgb, rgba) - getColorDistance(b.rgb, rgba) +
-                ((a.displayIndex > 15) ? penalty : 0) - ((b.displayIndex > 15) ? penalty : 0); // avoid virtual colors
-        })[0];
+const getNearestColor = (rgba, palette, virtualPenalty = 6) => {
+    if (rgba[3] < alpha_threshold)
+        return transparentColor;
+    else {
+        let nearestColor = null;
+        let colorDistance = 100000;
+        palette.forEach(color => {
+            const cd = getColorDistance(color.rgb, rgba) + ((color.displayIndex > 15) ? virtualPenalty : 0);
+            if (cd < colorDistance) {
+                nearestColor = color;
+                colorDistance = cd;
+            }
+        });
+        return nearestColor;
+    }
 };
 
 const getMatrix = (imageCtx) => {
