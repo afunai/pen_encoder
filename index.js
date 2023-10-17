@@ -70,9 +70,7 @@ const encodeP8scii = (val) => {
 };
 
 const getColorDistance = (rgb1, rgb2) => {
-    const [r1, g1, b1] = rgb1;
-    const [r2, g2, b2] = rgb2;
-    return Math.sqrt(Math.pow(r2 - r1, 2) + Math.pow(g2 - g1, 2) + Math.pow(b2 - b1, 2));
+    return chroma.deltaE([...rgb1.slice(0, 3)], [...rgb2.slice(0, 3)], 1, 1, 1.5);
 };
 
 const alpha_threshold = 127; // TODO
@@ -135,11 +133,7 @@ const getFullVirtualPalette = (displayPalette) => {
                 // virtual color object
                 virtualPalette.push({
                     systemIndex: virtualPalette.length + 256, // "system" index for virtual colors.
-                    rgb: [
-                        Math.floor((r1 + r2) / 2),
-                        Math.floor((g1 + g2) / 2),
-                        Math.floor((b1 + b2) / 2),
-                    ],
+                    rgb: chroma.average([[r1, g1, b1], [r2, g2, b2]], 'rgb').rgb(),
                     compositeIndexes: [color1.displayIndex, color2.displayIndex],
                 });
 
@@ -147,11 +141,7 @@ const getFullVirtualPalette = (displayPalette) => {
                 if (getColorDistance(color1.rgb, color2.rgb) < 70) {
                     virtualPalette.push({
                         systemIndex: virtualPalette.length + 256,
-                        rgb: [
-                            Math.floor((r1 * 3 + r2) / 4),
-                            Math.floor((g1 * 3 + g2) / 4),
-                            Math.floor((b1 * 3 + b2) / 4),
-                        ],
+                        rgb: chroma.average([[r1, g1, b1], [r2, g2, b2]], 'rgb', [3, 1]).rgb(),
                         compositeIndexes: [color1.displayIndex + 16, color2.displayIndex], // color1 = 16-31
                     });
                 }
