@@ -204,29 +204,6 @@ const getVirtualPaletteHeader = (virtualPalette) => {
     }).join('') + '\n';
 };
 
-const bindOrphanPixels = (encodedRow) => {
-    const one = encodeP8scii(1);
-    let row = '';
-    let orphanPixels = '';
-    for (i = 0; i < encodedRow.length; i += 2) {
-        const length = encodedRow.substring(i, i + 1);
-        const colorIndex = encodedRow.substring(i + 1, i + 2);
-        if (length === one)
-            orphanPixels += colorIndex;
-        if (
-            orphanPixels !== '' &&
-            ((i + 2 >= encodedRow.length) || orphanPixels.length > 4 || length !== one)
-        ) {
-            // use "minus value" characters to indicate number of orphans
-            row += String.fromCharCode(0x30 - orphanPixels.length) + orphanPixels;
-            orphanPixels = '';
-        }
-        if (length !== one)
-            row += length + colorIndex;
-    }
-    return row;
-};
-
 const bindDittoRows = (encodedBody) => {
     const body = [];
     let dittoRow = '';
@@ -249,6 +226,8 @@ const bindDittoRows = (encodedBody) => {
     return body;
 };
 
+const maxLength = 128;
+
 const getEncodedBody = (paletteMatrix) => {
     let encodedBody = [];
     paletteMatrix.forEach(paletteRow => {
@@ -257,13 +236,15 @@ const getEncodedBody = (paletteMatrix) => {
         let encodedRow = '';
         paletteRow.forEach((color, x) => {
             length += 1;
-            if ((color.displayIndex !== currentColorIndex) || (x >= paletteRow.length - 1) || length >= 128) {
-                encodedRow += encodeP8scii(length) + encodeP8scii(currentColorIndex);
+            if ((color.displayIndex !== currentColorIndex) || (x >= paletteRow.length - 1) || length >= maxLength) {
+                encodedRow += (length > 1) ?
+                    encodeP8scii(length) + encodeP8scii(currentColorIndex) :
+                    encodeP8scii(maxLength + 1 + currentColorIndex);
                 currentColorIndex = color.displayIndex;
                 length = 0;
             }
         });
-        encodedBody.push(bindOrphanPixels(encodedRow) + '\n');
+        encodedBody.push(encodedRow + '\n');
     });
     return bindDittoRows(encodedBody).join('');
 };
