@@ -163,8 +163,8 @@ const getFullVirtualPalette = (displayPalette) => {
 };
 
 const getBestVirtualPalette = (matrix, displayPalette) => {
-    return getBestPalette(matrix, getFullVirtualPalette(displayPalette), 47).map((color, i) => {
-        return {...color, displayIndex: i + 17}; // 17 - 63
+    return getBestPalette(matrix, getFullVirtualPalette(displayPalette), 62).map((color, i) => {
+        return {...color, displayIndex: i + 17}; // 17 - 79
     });
 };
 
