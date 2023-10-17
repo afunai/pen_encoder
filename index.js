@@ -127,7 +127,7 @@ const getFullVirtualPalette = (displayPalette) => {
     displayPalette.forEach(color1 => {
         const [r1, g1, b1] = color1.rgb;
         displayPalette.forEach(color2 => {
-            if (color1.displayIndex !== color2.displayIndex && getColorDistance(color1.rgb, color2.rgb) < 90) {
+            if (color1.displayIndex !== color2.displayIndex && getColorDistance(color1.rgb, color2.rgb) < 30) {
                 const [r2, g2, b2] = color2.rgb;
 
                 // virtual color object
@@ -138,7 +138,7 @@ const getFullVirtualPalette = (displayPalette) => {
                 });
 
                 // 3:1 composite ratio
-                if (getColorDistance(color1.rgb, color2.rgb) < 70) {
+                if (getColorDistance(color1.rgb, color2.rgb) < 20) {
                     virtualPalette.push({
                         systemIndex: virtualPalette.length + 256,
                         rgb: chroma.average([[r1, g1, b1], [r2, g2, b2]], 'rgb', [3, 1]).rgb(),
