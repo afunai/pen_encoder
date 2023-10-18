@@ -240,7 +240,7 @@ const getEncodedBody = (paletteMatrix) => {
             length += 1;
             if ((color.displayIndex !== currentColorIndex) || (x >= paletteRow.length - 1) || length >= maxLength) {
                 encodedRow += (length > 1) ?
-                    encodeP8scii(length) + encodeP8scii(currentColorIndex) :
+                    encodeP8scii(length - 1) + encodeP8scii(currentColorIndex) :
                     encodeP8scii(maxLength + 1 + currentColorIndex);
                 currentColorIndex = color.displayIndex;
                 length = 0;
