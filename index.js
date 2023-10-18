@@ -50,7 +50,7 @@ const fullSystemPalette = [...officialPalette, ...undocumentedPalette];
 // virtual displayIndex 16 is reserved for 'transparent' color
 const transparentColor = {systemIndex: -1, displayIndex: 16, rgb: [0x00, 0xcc, 0x00]};
 
-// 0x7f-0xaf characters in P8SCII charset
+// 0x7f-0xff characters in P8SCII charset
 // https://pico-8.fandom.com/wiki/P8SCII
 const p8sciiSpecialChars = [
     '○',
@@ -64,8 +64,10 @@ const p8sciiSpecialChars = [
     'ユ', 'ヨ', 'ラ', 'リ', 'ル', 'レ', 'ロ', 'ワ', 'ヲ', 'ン', 'ッ', 'ャ', 'ュ', 'ョ', '◜', '◝',
 ];
 
+const maxEncodableVal = 0xff - 0x30; // 207
+
 const encodeP8scii = (val) => {
-    if (val < 0 || val > 0xff) throw('out of bound');
+    if (val < 0 || val > maxEncodableVal) throw('out of bound');
 
     const shiftedVal = val + 0x30; // avoid control characters
     return (shiftedVal < 0x7f) ?
@@ -153,7 +155,7 @@ const getFullVirtualPalette = (displayPalette) => {
                     virtualPalette.push({
                         systemIndex: virtualPalette.length + 256,
                         rgb: chroma.average([[r1, g1, b1], [r2, g2, b2]], 'rgb', [3, 1]).rgb(),
-                        compositeIndexes: [color1.displayIndex + 16, color2.displayIndex], // color1 = 16-31
+                        compositeIndexes: [color1.displayIndex + 16, color2.displayIndex], // displayIndex1 = 16..31
                     });
                 }
             }
