@@ -76,19 +76,19 @@ const encodeP8scii = (val) => {
 };
 
 const getColorDistance = (rgb1, rgb2) => {
-    return chroma.deltaE([...rgb1.slice(0, 3)], [...rgb2.slice(0, 3)], 1, 1.2, 0.8);
+    return chroma.deltaE([...rgb1.slice(0, 3)], [...rgb2.slice(0, 3)], 1.5, 1, 0.9);
 };
 
 const alpha_threshold = 127; // TODO
 
-const getNearestColor = (rgba, palette, virtualPenalty = 6) => {
+const getNearestColor = (rgba, palette, virtualPenalty = 5) => {
     if (rgba[3] < alpha_threshold)
         return transparentColor;
     else {
         let nearestColor = null;
         let colorDistance = 100000;
         palette.forEach(color => {
-            const cd = getColorDistance(color.rgb, rgba) + ((color.displayIndex > 15) ? virtualPenalty : 0); + ((color.displayIndex === 0) ? -5 : 0);
+            const cd = getColorDistance(color.rgb, rgba) + ((color.displayIndex > 15) ? virtualPenalty : 0); + ((color.systemIndex === 0) ? -3 : 0);
             if (cd < colorDistance) {
                 nearestColor = color;
                 colorDistance = cd;
@@ -140,7 +140,7 @@ const getFullVirtualPalette = (displayPalette) => {
     displayPalette.forEach((color1, i) => {
         const [r1, g1, b1] = color1.rgb;
         displayPalette.slice(i + 1).forEach(color2 => {
-            if (getColorDistance(color1.rgb, color2.rgb) < 30) {
+            if (getColorDistance(color1.rgb, color2.rgb) < 28) {
                 const [r2, g2, b2] = color2.rgb;
 
                 // virtual color object
