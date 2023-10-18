@@ -165,8 +165,8 @@ const getFullVirtualPalette = (displayPalette) => {
 };
 
 const getBestVirtualPalette = (matrix, displayPalette) => {
-    return getBestPalette(matrix, getFullVirtualPalette(displayPalette), 62).map((color, i) => {
-        return {...color, displayIndex: i + 17}; // 17 - 79
+    return getBestPalette(matrix, getFullVirtualPalette(displayPalette), 63).map((color, i) => {
+        return {...color, displayIndex: i + 17}; // displayIndex = 17..79 (expandable to 207)
     });
 };
 
@@ -228,7 +228,8 @@ const bindDittoRows = (encodedBody) => {
     return body;
 };
 
-const maxLength = 128;
+const maxLength = 64;
+const singlePixelColorOffset = 0x80;
 
 const getEncodedBody = (paletteMatrix) => {
     let encodedBody = [];
@@ -239,9 +240,9 @@ const getEncodedBody = (paletteMatrix) => {
         paletteRow.forEach((color, x) => {
             length += 1;
             if ((color.displayIndex !== currentColorIndex) || (x >= paletteRow.length - 1) || length >= maxLength) {
-                encodedRow += (length > 1) ?
+                encodedRow += (length > 1 || (singlePixelColorOffset + currentColorIndex) > maxEncodableVal) ?
                     encodeP8scii(length - 1) + encodeP8scii(currentColorIndex) :
-                    encodeP8scii(maxLength + 1 + currentColorIndex);
+                    encodeP8scii(singlePixelColorOffset + currentColorIndex);
                 currentColorIndex = color.displayIndex;
                 length = 0;
             }
