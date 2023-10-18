@@ -229,7 +229,56 @@ const bindDittoRows = (encodedBody) => {
 };
 
 const maxLength = 64;
+const tokenIndexOffset = 0x40;
 const singlePixelColorOffset = 0x80;
+
+const getFrequentTokens = (encodedBody, max) => {
+    tokenCount = {};
+    encodedBody.forEach(row => {
+        let i = 0;
+        while (i < row.length) {
+            const firstByteVal = row.charCodeAt(i) - 0x30;
+            if (firstByteVal < 0) // special control characters (eg. ditto lines)
+                break;
+            else if (firstByteVal < singlePixelColorOffset) {
+                const token = row.substr(i, 2);
+                tokenCount[token] ||= 0;
+                tokenCount[token] += 1;
+                i += 2;
+            }
+            else
+                i += 1;
+        }
+    });
+    return Object.keys(tokenCount).sort(k => tokenCount[k]).slice(0, max);
+};
+
+const replaceFrequentTokens = (encodedBody, frequentTokens) => {
+    const replacedBody = [];
+    encodedBody.forEach(row => {
+        let replacedRow = '';
+        let i = 0;
+        while (i < row.length) {
+            const firstByteVal = row.charCodeAt(i) - 0x30;
+            if (firstByteVal < 0) { // special control characters (eg. ditto lines)
+                replacedRow = row;
+                break;
+            }
+            else if (firstByteVal < singlePixelColorOffset) {
+                const token = row.substr(i, 2);
+                const tokenIndex = frequentTokens.findIndex(t => t === token);
+                replacedRow += (tokenIndex >= 0) ? encodeP8scii(tokenIndexOffset + tokenIndex) : token;
+                i += 2;
+            }
+            else {
+                replacedRow += row.substr(i, 1); // singlePixelColor
+                i += 1;
+            }
+        }
+        replacedBody.push(replacedRow);
+    });
+    return replacedBody;
+}
 
 const getEncodedBody = (paletteMatrix) => {
     let encodedBody = [];
@@ -280,11 +329,16 @@ const encodeImage = () => {
     const paletteMatrix = getPaletteMatrix(matrix, availablePalette);
     drawByPaletteMatrix(convertedImageCtx, paletteMatrix, availablePalette);
 
+    const encodedBody = getEncodedBody(paletteMatrix);
+    const frequentTokens = getFrequentTokens(encodedBody, 64);
+
     document.getElementById('encodedString').value =
         getDisplayPaletteHeader(displayPalette) +
         getVirtualPaletteHeader(virtualPalette) +
+        (frequentTokens.join('') + '\n') +
         '---\n' +
-        getEncodedBody(paletteMatrix);
+        replaceFrequentTokens(encodedBody, frequentTokens).join('\n') +
+        '\n';
 };
 
 const displayImage = () => {
