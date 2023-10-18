@@ -217,14 +217,14 @@ const bindDittoRows = (encodedBody) => {
         }
         else {
             if (dittoCount > 0)
-                body.push(`*${dittoCount}\n`);
+                body.push(`*${dittoCount}`);
             body.push(row);
             dittoRow = row;
             dittoCount = 0;
         }
     });
     if (dittoCount > 0)
-        body.push(`*${dittoCount}\n`);
+        body.push(`*${dittoCount}`);
     return body;
 };
 
@@ -247,9 +247,9 @@ const getEncodedBody = (paletteMatrix) => {
                 length = 0;
             }
         });
-        encodedBody.push(encodedRow + '\n');
+        encodedBody.push(encodedRow);
     });
-    return bindDittoRows(encodedBody).join('');
+    return bindDittoRows(encodedBody);
 };
 
 const encodeImage = () => {
