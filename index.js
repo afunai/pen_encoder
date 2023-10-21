@@ -334,6 +334,23 @@ const drawResizedImage = () => {
     resizedImageCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
 };
 
+const printPalette = (palette, targetElementId) => {
+    const targetElement = document.getElementById(targetElementId);
+    targetElement.innerHTML = '';
+
+    palette.forEach(color => {
+        const [r, g, b] = color.rgb;
+
+        var colorSpan = document.createElement('span');
+        colorSpan.style.display = 'inline-block';
+        colorSpan.style.background = `rgb(${r},${g},${b})`;
+        colorSpan.style.width = '1.5em';
+        colorSpan.style.height = '1.5em';
+
+        targetElement.appendChild(colorSpan);
+    });
+};
+
 const disableForm = (disabled) => {
     ['#imageFile', '#targetWidth', '#encodeButton'].forEach(id => {
         document.querySelector(id).disabled = disabled;
@@ -376,6 +393,9 @@ const encodeImage = () => {
         '---\n' +
         replaceFrequentTokens(encodedBody, frequentTokens).join('\n') +
         '\n';
+
+    printPalette(displayPalette, 'displayPalette');
+    printPalette(virtualPalette, 'virtualPalette');
 };
 
 const selectImage = () => {
