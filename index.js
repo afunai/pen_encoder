@@ -127,10 +127,18 @@ const getBestPalette = (matrix, basePalette, max) => {
     return bestColorIndexes.slice(0, max).map(index => colorScores[index].color); // TODO: keep original indexes as possible
 };
 
-const getBestDisplayPalette = (matrix) => {
-    return getBestPalette(matrix, fullSystemPalette, 16).sort(
-        color => color.systemIndex
-    ).map((color, i) => {
+const getDisplayPalette = (paletteType, matrix) => {
+    let displayPalette;
+    if (paletteType == 'mixed')
+        displayPalette = getBestPalette(matrix, fullSystemPalette, 16).sort(
+            color => color.systemIndex
+        );
+    else if (paletteType == 'undocumented')
+        displayPalette = undocumentedPalette;
+    else
+        displayPalette = officialPalette;
+
+    return displayPalette.map((color, i) => {
         return {...color, displayIndex: i}; // 0 - 15
     });
 };
