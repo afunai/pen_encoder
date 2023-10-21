@@ -18,10 +18,27 @@
             <img id="originalImage" style="display: none;">
         </div>
         <div>
-            <canvas id="resizedImage" style="zoom: 2;"></canvas>
+            <div>
+                <canvas id="resizedImage" style="zoom: 2;" height="0"></canvas>
+            </div>
+
+            <label for="targetWidth">Image width</label>
+            <select id="targetWidth" onchange="drawResizedImage();">
+                <option value="64">64px</option>
+                <option value="96">96px</option>
+                <option value="128" selected>128px</option>
+                <option value="192">192px</option>
+            </select>
+
+            <div>
+                <button id="encodeButton"
+                    onclick="disableForm(true); encodeImage(); disableForm(false);" disabled>
+                    Encode (may take minutes)
+                </button>
+            </div>
         </div>
         <div>
-            <canvas id="convertedImage" style="zoom: 2;"></canvas>
+            <canvas id="convertedImage" style="zoom: 2;" height="0"></canvas>
         </div>
         <div>
             <label for="encodedString">Encoded string</label>

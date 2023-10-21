@@ -301,10 +301,19 @@ const getEncodedBody = (paletteMatrix) => {
     return bindDittoRows(encodedBody);
 };
 
-const encodeImage = () => {
-    const img = document.getElementById('originalImage');
-    const targetWidth = 128; // TODO
+//
+// minimum UI in plain Javascript
+//
+
+const getTargetDimension = (img) => {
+    const targetWidth = parseInt(document.getElementById('targetWidth').value);
     const targetHeight = img.height / (img.width / targetWidth);
+    return [targetWidth, targetHeight];
+};
+
+const drawResizedImage = () => {
+    const img = document.getElementById('originalImage');
+    const [targetWidth, targetHeight] = getTargetDimension(img);
 
     const resizedImage = document.getElementById('resizedImage');
     resizedImage.width = targetWidth;
@@ -312,9 +321,26 @@ const encodeImage = () => {
     const resizedImageCtx = resizedImage.getContext('2d', {
         alpha: true,
         globalAlpha: 1,
-        willReadFrequently: true
+        willReadFrequently: true,
     });
     resizedImageCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
+};
+
+const disableForm = (disabled) => {
+    ['#imageFile', '#targetWidth', '#encodeButton'].forEach(id => {
+        document.querySelector(id).disabled = disabled;
+    });
+    document.body.style.cursor = disabled ? 'progress' : 'pointer';
+};
+
+const encodeImage = () => {
+    const resizedImage = document.getElementById('resizedImage');
+    const resizedImageCtx = resizedImage.getContext('2d', {
+        alpha: true,
+        globalAlpha: 1,
+        willReadFrequently: true,
+    });
+    const [targetWidth, targetHeight] = getTargetDimension(resizedImage);
 
     const convertedImage = document.getElementById('convertedImage');
     convertedImage.width = targetWidth;
@@ -349,8 +375,9 @@ const displayImage = () => {
     if (file) {
         img.src = URL.createObjectURL(file);
         img.onload = function() {
-          URL.revokeObjectURL(img.src);
-          encodeImage();
+            URL.revokeObjectURL(img.src);
+            drawResizedImage(img);
+            document.querySelector('#encodeButton').disabled = false;
         }
     }
 };
