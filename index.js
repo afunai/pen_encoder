@@ -356,7 +356,10 @@ const encodeImage = () => {
     const convertedImageCtx = convertedImage.getContext('2d', {alpha: true});
 
     const matrix = getMatrix(resizedImageCtx);
-    const displayPalette = getBestDisplayPalette(matrix);
+
+    const paletteType = document.getElementById('paletteType').value;
+    const displayPalette = getDisplayPalette(paletteType, matrix);
+
     const virtualPalette = getBestVirtualPalette(matrix, displayPalette);
     const availablePalette = [...displayPalette, ...virtualPalette];
 
