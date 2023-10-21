@@ -378,7 +378,7 @@ const encodeImage = () => {
         '\n';
 };
 
-const displayImage = () => {
+const selectImage = () => {
     const fileInput = document.getElementById('imageFile');
     const img = document.getElementById('originalImage');
 
