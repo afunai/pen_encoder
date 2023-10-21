@@ -386,13 +386,15 @@ const encodeImage = () => {
     const encodedBody = getEncodedBody(paletteMatrix);
     const frequentTokens = getFrequentTokens(encodedBody, 64);
 
+    const filename = document.getElementById('imageFile').files[0].name;
     document.getElementById('encodedString').value =
+        `pen_data['${filename.replace(/\..+?$/, '')}']=[[\n` +
         getDisplayPaletteHeader(displayPalette) +
         getVirtualPaletteHeader(virtualPalette) +
         (frequentTokens.join('') + '\n') +
         '---\n' +
         replaceFrequentTokens(encodedBody, frequentTokens).join('\n') +
-        '\n';
+        '\n]]\n';
 
     printPalette(displayPalette, 'displayPalette');
     printPalette(virtualPalette, 'virtualPalette');
