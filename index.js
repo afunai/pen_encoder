@@ -98,12 +98,12 @@ const encodeP8scii = (val) => {
 };
 
 const getColorDistance = (rgb1, rgb2) => {
-    return chroma.deltaE([...rgb1.slice(0, 3)], [...rgb2.slice(0, 3)], 1, 1.2, 0.8);
+    return chroma.deltaE([...rgb1.slice(0, 3)], [...rgb2.slice(0, 3)], 1, 1, 1);
 };
 
 const alpha_threshold = 127; // TODO
 
-const getNearestColor = (rgba, palette, virtualPenalty = 6) => {
+const getNearestColor = (rgba, palette, virtualPenalty = 3) => {
     if (rgba[3] < alpha_threshold)
         return transparentColor;
     else {
@@ -172,7 +172,7 @@ const getFullVirtualPalette = (displayPalette) => {
     displayPalette.forEach((color1, i) => {
         const [r1, g1, b1] = color1.rgb;
         displayPalette.slice(i + 1).forEach(color2 => {
-            if (getColorDistance(color1.rgb, color2.rgb) < 30) {
+            if (getColorDistance(color1.rgb, color2.rgb) < 23) {
                 const [r2, g2, b2] = color2.rgb;
 
                 // virtual color object
@@ -183,7 +183,7 @@ const getFullVirtualPalette = (displayPalette) => {
                 });
 
                 // 3:1 composite ratio
-                if (getColorDistance(color1.rgb, color2.rgb) < 20) {
+                if (getColorDistance(color1.rgb, color2.rgb) < 13) {
                     virtualPalette.push({
                         systemIndex: virtualPalette.length + 256,
                         rgb: chroma.average([[r1, g1, b1], [r2, g2, b2]], 'rgb', [3, 1]).rgb(),
