@@ -45,6 +45,28 @@ const undocumentedPalette = [
     {systemIndex: 143, rgb: [0xff, 0x9d, 0x81]},
 ];
 
+const peachPalette = [
+    {systemIndex: 0, rgb: [0x00, 0x00, 0x00]},
+    {systemIndex: 1, rgb: [0x1d, 0x2b, 0x53]},
+    {systemIndex: 142, rgb: [0xff, 0x6e, 0x59]},
+    {systemIndex: 3, rgb: [0x00, 0x87, 0x51]},
+
+    {systemIndex: 4, rgb: [0xab, 0x52, 0x36]},
+    {systemIndex: 5, rgb: [0x5f, 0x57, 0x4f]},
+    {systemIndex: 6, rgb: [0xc2, 0xc3, 0xc7]},
+    {systemIndex: 7, rgb: [0xff, 0xf1, 0xe8]},
+
+    {systemIndex: 8, rgb: [0xff, 0x00, 0x4d]},
+    {systemIndex: 9, rgb: [0xff, 0xa3, 0x00]},
+    {systemIndex: 10, rgb: [0xff, 0xec, 0x27]},
+    {systemIndex: 11, rgb: [0x00, 0xe4, 0x36]},
+
+    {systemIndex: 12, rgb: [0x29, 0xad, 0xff]},
+    {systemIndex: 143, rgb: [0xff, 0x9d, 0x81]},
+    {systemIndex: 14, rgb: [0xff, 0x77, 0xa8]},
+    {systemIndex: 15, rgb: [0xff, 0xcc, 0xaa]},
+];
+
 const fullSystemPalette = [...officialPalette, ...undocumentedPalette];
 
 // virtual displayIndex 16 is reserved for 'transparent' color
@@ -135,6 +157,8 @@ const getDisplayPalette = (paletteType, matrix) => {
         );
     else if (paletteType == 'undocumented')
         displayPalette = undocumentedPalette;
+    else if (paletteType == 'peach')
+        displayPalette = peachPalette;
     else
         displayPalette = officialPalette;
 
