@@ -260,7 +260,7 @@ const bindDittoRows = (encodedBody) => {
     return body;
 };
 
-const maxLength = 64;
+const maxLength = 0x3f;
 const tokenIndexOffset = 0x40;
 const singlePixelColorOffset = 0x80;
 
