@@ -412,7 +412,7 @@ const encodeImage = () => {
 
     const filename = document.getElementById('imageFile').files[0].name;
     document.getElementById('encodedString').value =
-        `pen_data['${filename.replace(/\..+?$/, '')}']=[[\n` +
+        `Pen.data['${filename.replace(/\..+?$/, '')}']=[[\n` +
         getDisplayPaletteHeader(displayPalette) +
         getVirtualPaletteHeader(virtualPalette) +
         (frequentTokens.join('') + '\n') +
