@@ -312,6 +312,15 @@ const replaceFrequentTokens = (encodedBody, frequentTokens) => {
     return replacedBody;
 }
 
+const encodeToken = (length, colorIndex) => {
+    return (
+        length == 1 &&
+        (singlePixelColorOffset + colorIndex) <= maxEncodableVal
+    ) ?
+        encodeP8scii(singlePixelColorOffset + colorIndex) :
+        encodeP8scii(length) + encodeP8scii(colorIndex); // length = 1..63
+}
+
 const getEncodedBody = (paletteMatrix) => {
     let encodedBody = [];
     paletteMatrix.forEach(paletteRow => {
@@ -319,15 +328,26 @@ const getEncodedBody = (paletteMatrix) => {
         let length = 0;
         let encodedRow = '';
         paletteRow.forEach((color, x) => {
-            length += 1;
-            if ((color.displayIndex !== currentColorIndex) || (x >= paletteRow.length - 1) || length >= maxLength) {
-                encodedRow += (length > 1 || (singlePixelColorOffset + currentColorIndex) > maxEncodableVal) ?
-                    encodeP8scii(length - 1) + encodeP8scii(currentColorIndex) :
-                    encodeP8scii(singlePixelColorOffset + currentColorIndex);
+            if (color.displayIndex !== currentColorIndex) {
+                encodedRow += encodeToken(length, currentColorIndex);
                 currentColorIndex = color.displayIndex;
-                length = 0;
+                length = 1;
+            }
+            else
+                length += 1;
+
+            if (length > maxLength) {
+                // split token
+                encodedRow += encodeToken(maxLength, currentColorIndex);
+                length -= maxLength;
+            }
+
+            if (x === paletteRow.length - 1) {
+                // last token in the row
+                encodedRow += encodeToken(length, currentColorIndex);
             }
         });
+
         encodedBody.push(encodedRow);
     });
     return bindDittoRows(encodedBody);
