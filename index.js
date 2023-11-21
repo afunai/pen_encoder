@@ -179,7 +179,7 @@ const getFullVirtualPalette = (displayPalette) => {
                 virtualPalette.push({
                     systemIndex: virtualPalette.length + 256, // "system" index for virtual colors.
                     rgb: chroma.average([[r1, g1, b1], [r2, g2, b2]], 'rgb').rgb(),
-                    compositeIndexes: [color1.displayIndex, color2.displayIndex],
+                    compositeIndexes: [color2.displayIndex, color1.displayIndex],
                 });
 
                 // 3:1 composite ratio
@@ -187,7 +187,7 @@ const getFullVirtualPalette = (displayPalette) => {
                     virtualPalette.push({
                         systemIndex: virtualPalette.length + 256,
                         rgb: chroma.average([[r1, g1, b1], [r2, g2, b2]], 'rgb', [3, 1]).rgb(),
-                        compositeIndexes: [color1.displayIndex + 16, color2.displayIndex], // displayIndex1 = 16..31
+                        compositeIndexes: [color2.displayIndex + 16, color1.displayIndex], // displayIndex1 = 16..31
                     });
                 }
             }
