@@ -145,7 +145,9 @@ const getBestPalette = (matrix, basePalette, max) => {
             }
         });
     });
-    const bestColorIndexes = Object.keys(colorScores).sort(index => colorScores[index].score);
+    const bestColorIndexes = Object.keys(colorScores).
+        filter(index => colorScores[index].score > 0).
+        sort(index => colorScores[index].score);
     return bestColorIndexes.slice(0, max).map(index => colorScores[index].color); // TODO: keep original indexes as possible
 };
 
