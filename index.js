@@ -321,10 +321,17 @@ const encodeToken = (length, colorIndex) => {
         encodeP8scii(length) + encodeP8scii(colorIndex); // length = 1..63
 }
 
+const chopTransparentPixels = (paletteRow) => {
+    let i;
+    for (i = paletteRow.length - 1; i >= 0 && paletteRow[i].displayIndex === 16; i--) {}
+    return paletteRow.slice(0, i + 1);
+};
+
 const getEncodedBody = (paletteMatrix) => {
     let encodedBody = [];
-    paletteMatrix.forEach(paletteRow => {
-        let currentColorIndex = paletteRow[0].displayIndex;
+    paletteMatrix.forEach((row, y) => {
+        const paletteRow = (y > 0) ? chopTransparentPixels(row) : row;
+        let currentColorIndex = (paletteRow.length > 0) ? paletteRow[0].displayIndex : null;
         let length = 0;
         let encodedRow = '';
         paletteRow.forEach((color, x) => {
@@ -438,7 +445,7 @@ const encodeImage = () => {
         (frequentTokens.join('') + '\n') +
         '---\n' +
         replaceFrequentTokens(encodedBody, frequentTokens).join('\n') +
-        '\n]]\n';
+        ']]\n';
 
     printPalette(displayPalette, 'displayPalette');
     printPalette(virtualPalette, 'virtualPalette');
