@@ -103,14 +103,23 @@ const getColorDistance = (rgb1, rgb2) => {
 
 const alpha_threshold = 127; // TODO
 
-const getNearestColor = (rgba, palette, virtualPenalty = 3) => {
+const getColorPenalty = (color) => {
+    if (color.systemIndex === 0)
+        return -5; // black
+    else if (color.displayIndex <= 15)
+        return 0; // system colors
+    else
+        return color.colorPenalty; // composite colors
+};
+
+const getNearestColor = (rgba, palette) => {
     if (rgba[3] < alpha_threshold)
         return transparentColor;
     else {
         let nearestColor = null;
         let colorDistance = 100000;
         palette.forEach(color => {
-            const cd = getColorDistance(color.rgb, rgba) + ((color.displayIndex > 15) ? virtualPenalty : 0); + ((color.displayIndex === 0) ? -5 : 0);
+            const cd = getColorDistance(color.rgb, rgba) + getColorPenalty(color);
             if (cd < colorDistance) {
                 nearestColor = color;
                 colorDistance = cd;
@@ -169,12 +178,26 @@ const getDisplayPalette = (paletteType, matrix) => {
     });
 };
 
+const peachColorSystemIndexes = [
+    7, 9, 15, 142, 143,
+];
+const calcColorPenalty = (color1, color2, colorDistance) => {
+    if (
+        peachColorSystemIndexes.find(i => i === color1.systemIndex) ||
+        peachColorSystemIndexes.find(i => i === color2.systemIndex)
+    )
+        return colorDistance / 7; // the peach colors
+    else
+        return colorDistance / 4;
+};
+
 const getFullVirtualPalette = (displayPalette) => {
     const virtualPalette = [];
     displayPalette.forEach((color1, i) => {
         const [r1, g1, b1] = color1.rgb;
         displayPalette.slice(i + 1).forEach(color2 => {
-            if (getColorDistance(color1.rgb, color2.rgb) < 23) {
+            const colorDistance = getColorDistance(color1.rgb, color2.rgb);
+            if (colorDistance < 23) {
                 const [r2, g2, b2] = color2.rgb;
 
                 // virtual color object
@@ -182,14 +205,18 @@ const getFullVirtualPalette = (displayPalette) => {
                     systemIndex: virtualPalette.length + 256, // "system" index for virtual colors.
                     rgb: chroma.average([[r1, g1, b1], [r2, g2, b2]], 'rgb').rgb(),
                     compositeIndexes: [color2.displayIndex, color1.displayIndex],
+                    colorDistance: colorDistance,
+                    colorPenalty: calcColorPenalty(color1, color2, colorDistance),
                 });
 
                 // 3:1 composite ratio
-                if (getColorDistance(color1.rgb, color2.rgb) < 13) {
+                if (colorDistance < 13) {
                     virtualPalette.push({
                         systemIndex: virtualPalette.length + 256,
                         rgb: chroma.average([[r1, g1, b1], [r2, g2, b2]], 'rgb', [3, 1]).rgb(),
                         compositeIndexes: [color2.displayIndex + 16, color1.displayIndex], // displayIndex1 = 16..31
+                        colorDistance: colorDistance,
+                        colorPenalty: calcColorPenalty(color1, color2, colorDistance) + 1,
                     });
                 }
             }
