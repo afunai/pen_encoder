@@ -250,7 +250,8 @@ const getPaletteMatrix = (matrix, palette) => {
                 paletteMatrix[y - 1]?.[x].displayIndex != color.displayIndex &&
                 paletteMatrix[y + 1]?.[x].displayIndex != color.displayIndex
             )
-                paletteMatrix[y][x] = getNearestColor(matrix[y][x], palette.slice(0, 15));
+                paletteMatrix[y][x] = getNearestColor(matrix[y][x],
+                    color.compositeIndexes.map(i => palette[i]));
         });
     });
 
