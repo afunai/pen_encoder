@@ -105,7 +105,7 @@ const alpha_threshold = 127; // TODO
 
 const getColorPenalty = (color) => {
     if (color.systemIndex === 0)
-        return -5; // black
+        return -1; // black
     else if (color.systemIndex < 256)
         return 0; // system colors
     else
