@@ -157,15 +157,13 @@ const getBestPalette = (matrix, basePalette, max) => {
     const bestColorIndexes = Object.keys(colorScores).
         filter(index => colorScores[index].score > 0).
         sort(index => colorScores[index].score);
-    return bestColorIndexes.slice(0, max).map(index => colorScores[index].color); // TODO: keep original indexes as possible
+    return bestColorIndexes.slice(0, max).map(index => colorScores[index].color);
 };
 
 const getDisplayPalette = (paletteType, matrix) => {
     let displayPalette;
     if (paletteType == 'mixed')
-        displayPalette = getBestPalette(matrix, fullSystemPalette, 16).sort(
-            color => color.systemIndex
-        );
+        displayPalette = getBestPalette(matrix, fullSystemPalette, 16); // TODO: keep original indexes as possible
     else if (paletteType == 'undocumented')
         displayPalette = undocumentedPalette;
     else if (paletteType == 'peach')
