@@ -241,6 +241,21 @@ const getPaletteMatrix = (matrix, palette) => {
             paletteRow.push(nearestColor);
         });
     });
+
+    // replace orphan composite colors
+    paletteMatrix.forEach((row, y) => {
+        row.forEach((color, x) => {
+            if (
+                color.displayIndex > 16 &&
+                row[x - 1]?.displayIndex != color.displayIndex &&
+                row[x + 1]?.displayIndex != color.displayIndex &&
+                paletteMatrix[y - 1]?.[x].displayIndex != color.displayIndex &&
+                paletteMatrix[y + 1]?.[x].displayIndex != color.displayIndex
+            )
+                paletteMatrix[y][x] = getNearestColor(matrix[y][x], palette.slice(0, 15));
+        });
+    });
+
     return paletteMatrix;
 };
 
