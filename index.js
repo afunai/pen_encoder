@@ -244,12 +244,28 @@ const getPaletteMatrix = (matrix, palette) => {
     return paletteMatrix;
 };
 
-const drawByPaletteMatrix = (imageCtx, paletteMatrix, palette) => {
+const fillPatterns = [
+    [0b0101, 0b1010, 0b0101, 0b1010],
+    [0b0001, 0b0100, 0b0001, 0b0100],
+];
+
+const drawByPaletteMatrix = (imageCtx, paletteMatrix, palette, scale) => {
     paletteMatrix.forEach((row, y) => {
         row.forEach((color, x) => {
-            const [r, g, b] = color.rgb;
+            let r, g, b;
+            if (color.compositeIndexes) {
+                const fillPattern =
+                    fillPatterns[(color.compositeIndexes[0] < 16) ? 0 : 1];
+                const dithered_color = palette[
+                    color.compositeIndexes[(fillPattern[y % 4] & (0b1000 >> (x % 4))) ? 0 : 1] % 16
+                ];
+                [r, g, b] = dithered_color.rgb;
+            }
+            else {
+                [r, g, b] = color.rgb;
+            }
             imageCtx.fillStyle = `rgb(${r},${g},${b})`;
-            imageCtx.fillRect(x, y, 1, 1);
+            imageCtx.fillRect(x * scale, y * scale, scale, scale);
         });
     });
 };
@@ -438,6 +454,8 @@ const disableForm = (disabled) => {
     document.body.style.cursor = disabled ? 'progress' : 'pointer';
 };
 
+const convertedImageScale = 4;
+
 const encodeImage = () => {
     const resizedImage = document.getElementById('resizedImage');
     const resizedImageCtx = resizedImage.getContext('2d', {
@@ -448,8 +466,8 @@ const encodeImage = () => {
     const [targetWidth, targetHeight] = getTargetDimension(resizedImage);
 
     const convertedImage = document.getElementById('convertedImage');
-    convertedImage.width = targetWidth;
-    convertedImage.height = targetHeight;
+    convertedImage.width = targetWidth * convertedImageScale;
+    convertedImage.height = targetHeight * convertedImageScale;
     const convertedImageCtx = convertedImage.getContext('2d', {alpha: true});
 
     const matrix = getMatrix(resizedImageCtx);
@@ -461,20 +479,22 @@ const encodeImage = () => {
     const availablePalette = [...displayPalette, ...virtualPalette];
 
     const paletteMatrix = getPaletteMatrix(matrix, availablePalette);
-    drawByPaletteMatrix(convertedImageCtx, paletteMatrix, availablePalette);
+    drawByPaletteMatrix(convertedImageCtx, paletteMatrix, availablePalette, convertedImageScale);
 
     const encodedBody = getEncodedBody(paletteMatrix);
     const frequentTokens = getFrequentTokens(encodedBody, 64);
 
-    const filename = document.getElementById('imageFile').files[0].name;
-    document.getElementById('encodedString').value =
-        `Pen.data['${filename.replace(/\..+?$/, '')}']=[[\n` +
-        getDisplayPaletteHeader(displayPalette) +
+    const encodedData = getDisplayPaletteHeader(displayPalette) +
         getVirtualPaletteHeader(virtualPalette) +
         (frequentTokens.join('') + '\n') +
         '---\n' +
-        replaceFrequentTokens(encodedBody, frequentTokens).join('\n') +
-        ']]\n';
+        replaceFrequentTokens(encodedBody, frequentTokens).join('\n');
+
+    document.getElementById('charCount').innerText = `${encodedData.length} chars: `;
+
+    const filename = document.getElementById('imageFile').files[0].name;
+    document.getElementById('encodedString').value =
+        `Pen.data['${filename.replace(/\..+?$/, '')}']=[[\n${encodedData}]]\n`;
 
     printPalette(displayPalette, 'displayPalette');
     printPalette(virtualPalette, 'virtualPalette');
