@@ -184,7 +184,7 @@ const calcColorPenalty = (color1, color2, colorDistance) => {
         peachColorSystemIndexes.find(i => i === color1.systemIndex) ||
         peachColorSystemIndexes.find(i => i === color2.systemIndex)
     )
-        return colorDistance / 7; // the peach colors
+        return colorDistance / 6; // the peach colors
     else
         return colorDistance / 4;
 };
